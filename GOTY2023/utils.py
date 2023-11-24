@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 import base64
+from io import StringIO
 from pontuacoes import obter_pontos_por_categoria
 
 
@@ -40,9 +41,24 @@ def exibir_escolhas_usuario(categorias_escolhidas):
     st.table(escolhas_usuario_df)
 
 def carregar_respostas():
+    github_raw_url = "https://github.com/Kozato01/goty/blob/main/GOTY2023/respostas.csv"
+
     try:
+        # Baixar o conteúdo do arquivo CSV do GitHub
+        response = requests.get(github_raw_url)
+        response.raise_for_status()  # Verificar se houve algum erro no download
+
+        # Ler o conteúdo do CSV a partir do texto retornado pela requisição
+        csv_content = StringIO(response.text)
+
         # Tentar carregar respostas do arquivo CSV
-        return pd.read_csv("respostas.csv")
+        return pd.read_csv(csv_content)
+    
+    except requests.exceptions.RequestException as e:
+        # Lidar com erros de requisição
+        print(f"Erro ao baixar o arquivo CSV do GitHub: {e}")
+        return pd.DataFrame()
+    
     except pd.errors.EmptyDataError:
         # Se o arquivo estiver vazio, retornar DataFrame vazio
         return pd.DataFrame()
