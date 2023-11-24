@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import streamlit as st
 import base64
+import git
 from io import StringIO
 from pontuacoes import obter_pontos_por_categoria
 
@@ -221,15 +222,22 @@ def exibir_formulario():
 
     # Botão de confirmação
     if st.button("Confirmar e Salvar Respostas"):
-        # Criar DataFrame com as respostas
         novas_respostas_df = pd.DataFrame(categorias_escolhidas, index=[0])
-
-        # Concatenar o DataFrame existente com as novas respostas
         respostas_df = pd.concat([respostas_df, novas_respostas_df], ignore_index=True)
 
-        # Salvar respostas em um arquivo CSV
+        # Salvar respostas localmente
         respostas_df.to_csv("respostas.csv", index=False)
-        st.success("Respostas salvas com sucesso!")
+        st.success("Respostas salvas localmente com sucesso!")
+
+        # Salvar no GitHub
+        try:
+            repo = git.Repo("caminho/para/seu/repositorio")  # Substitua com o caminho do seu repositório
+            repo.git.add("respostas.csv")
+            repo.git.commit(m="Atualizando respostas")
+            repo.git.push()
+            st.success("Respostas salvas no GitHub com sucesso!")
+        except Exception as e:
+            st.error(f"Erro ao salvar no GitHub: {str(e)}")
 
 def baixar_respostas_usuario(email, nome):
     respostas_df = carregar_respostas()
