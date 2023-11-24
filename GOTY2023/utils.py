@@ -231,7 +231,7 @@ def exibir_formulario():
 
         # Salvar no GitHub
         try:
-            repo = git.Repo("caminho/para/seu/repositorio")  # Substitua com o caminho do seu repositório
+            repo = git.Repo("https://github.com/Kozato01/goty/blob/main/GOTY2023/respostas.csv")  # Substitua com o caminho do seu repositório
             repo.git.add("respostas.csv")
             repo.git.commit(m="Atualizando respostas")
             repo.git.push()
