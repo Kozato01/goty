@@ -1,3 +1,6 @@
 pandas
 pybase64
 streamlit
+os
+git
+requests
