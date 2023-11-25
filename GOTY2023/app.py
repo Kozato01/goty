@@ -98,7 +98,7 @@ def main():
         with col2:
             nome_visualizar = st.text_input("Nome:").lower()
         if st.button("Visualizar Respostas"):
-            respostas_ganhadores_df = Resultado()
+            #respostas_ganhadores_df = Resultado()
             visualizar_respostas(email_visualizar, nome_visualizar, respostas_ganhadores_df=None)
             
     st.markdown("<div class='footer'>Desenvolvido por Kozato</div>", unsafe_allow_html=True)
