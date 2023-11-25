@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 import base64
+from github import Github
 import os
 from pontuacoes import obter_pontos_por_categoria
 
@@ -161,37 +162,58 @@ def exibir_formulario():
     24: {"Categoria": "Melhor Adaptação - 2 pontos", "Opções": ["Castlevania: Nocturne", "Gran Turismo", "The Last of Us", "Super Mario Bros.: O Filme", "Twisted Metal"]},
     25: {"Categoria": "Jogo Mais Aguardado de 2024 - 2 pontos", "Opções": ["Final Fantasy VII Rebirth", "Hades II", "Like a Dragon: Infinite Wealth", "Star Wars Outlaws", "Tekken 8"]},
 }
+    
     categorias_escolhidas = {}
     respostas_df = carregar_respostas()
-
+    
+    # Obter informações do usuário (substitua isso com seus dados de entrada)
+    email = st.text_input("Email:")
+    nome = st.text_input("Nome:")
+    telegram = st.text_input("Nome no Telegram:")
+    
+    # Verificar se o usuário já preencheu o formulário
     if usuario_existente(respostas_df, email, nome, telegram):
         st.warning("Você já preencheu o formulário. Não é permitido preencher novamente.")
-        return
-
-    for numero, info_categoria in categorias_opcoes.items():
-        categoria = info_categoria["Categoria"]
-        opcoes = info_categoria["Opções"]
-
-        if st.checkbox(f"{numero}. Escolher {categoria}", key=categoria):
-            st.write("Clique abaixo para ver as opções:")
-            with st.expander(f"Opções para {categoria}", expanded=False):
-                opcao_escolhida = st.selectbox(f"Escolha a opção em {categoria}:", opcoes)
-                categorias_escolhidas[categoria] = opcao_escolhida
-            st.markdown('<div style="float: right; margin-right: 20px;"><span style="color:green">&#10004;</span> Categoria escolhida: {}</div>'.format(categoria), unsafe_allow_html=True)
-
-    st.markdown("<h2 style='color: #ff6600; margin-top: 30px; background: linear-gradient(to right, #333333, #666666); padding: 10px; border-radius: 5px;'>Suas Escolhas</h2>", unsafe_allow_html=True)
-    escolhas_usuario_df = pd.DataFrame(categorias_escolhidas.items(), columns=["Categoria", "Escolha"]).set_index("Categoria").T
-    st.table(escolhas_usuario_df.style.set_table_styles([{"selector": "th", "props": [("background-color", "#333333"), ("color", "#ff6600")]}]))
-
-    categorias_escolhidas["Email"] = email
-    categorias_escolhidas["Nome"] = nome
-    categorias_escolhidas["Nome no Telegram"] = telegram
-
-    if st.button("Confirmar e Salvar Respostas"):
-        novas_respostas_df = pd.DataFrame(categorias_escolhidas, index=[0])
-        respostas_df = pd.concat([respostas_df, novas_respostas_df], ignore_index=True)
-        respostas_df.to_csv("respostas.csv", index=False)
-        st.success("Respostas salvas com sucesso!")
+    else:
+        # Loop pelas categorias e obter escolhas do usuário
+        for numero, info_categoria in categorias_opcoes.items():
+            categoria = info_categoria["Categoria"]
+            opcoes = info_categoria["Opções"]
+    
+            if st.checkbox(f"{numero}. Escolher {categoria}", key=categoria):
+                st.write("Clique abaixo para ver as opções:")
+                with st.expander(f"Opções para {categoria}", expanded=False):
+                    opcao_escolhida = st.selectbox(f"Escolha a opção em {categoria}:", opcoes)
+                    categorias_escolhidas[categoria] = opcao_escolhida
+                st.markdown('<div style="float: right; margin-right: 20px;"><span style="color:green">&#10004;</span> Categoria escolhida: {}</div>'.format(categoria), unsafe_allow_html=True)
+    
+        # Exibir escolhas do usuário em uma tabela
+        st.markdown("<h2 style='color: #ff6600; margin-top: 30px; background: linear-gradient(to right, #333333, #666666); padding: 10px; border-radius: 5px;'>Suas Escolhas</h2>", unsafe_allow_html=True)
+        escolhas_usuario_df = pd.DataFrame(categorias_escolhidas.items(), columns=["Categoria", "Escolha"]).set_index("Categoria").T
+        st.table(escolhas_usuario_df.style.set_table_styles([{"selector": "th", "props": [("background-color", "#333333"), ("color", "#ff6600")]}]))
+    
+        # Adicionar informações do usuário ao dicionário de escolhas
+        categorias_escolhidas["Email"] = email
+        categorias_escolhidas["Nome"] = nome
+        categorias_escolhidas["Nome no Telegram"] = telegram
+    
+        # Botão para confirmar e salvar respostas
+        if st.button("Confirmar e Salvar Respostas"):
+            # Criar DataFrame com novas respostas
+            novas_respostas_df = pd.DataFrame(categorias_escolhidas, index=[0])
+            # Concatenar com o DataFrame existente
+            respostas_df = pd.concat([respostas_df, novas_respostas_df], ignore_index=True)
+    
+            # Autenticação no GitHub (substitua 'seu_usuario' e 'seu_token' pelos seus dados)
+            g = Github("Kozato01", "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")
+            repo = g.get_repo("https://github.com/Kozato01/goty/tree/main/GOTY2023")
+    
+            # Atualizar o conteúdo do arquivo CSV no repositório
+            path = "https://github.com/Kozato01/goty/blob/main/GOTY2023/respostas.csv"
+            contents = repo.get_contents(path)
+            repo.update_file(contents.path, "Atualizando respostas.csv", respostas_df.to_csv(index=False), contents.sha)
+    
+            st.success("Respostas salvas com sucesso no GitHub!")
 
 def baixar_respostas_usuario(email, nome):
     respostas_df = carregar_respostas()
