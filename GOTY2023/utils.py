@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 import base64
-from github import Github
+import Github
 import os
 from pontuacoes import obter_pontos_por_categoria
 
