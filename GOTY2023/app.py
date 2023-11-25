@@ -1,5 +1,4 @@
 import streamlit as st
-import Github
 from utils import Resultado, visualizar_respostas, exibir_formulario, baixar_respostas_usuario
 
 # Adicionar degradê ao fundo
