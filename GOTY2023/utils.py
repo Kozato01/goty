@@ -1,9 +1,7 @@
 import pandas as pd
-import requests
 import streamlit as st
 import base64
-import git
-from io import StringIO
+import os
 from pontuacoes import obter_pontos_por_categoria
 
 
@@ -43,26 +41,11 @@ def exibir_escolhas_usuario(categorias_escolhidas):
     st.table(escolhas_usuario_df)
 
 def carregar_respostas():
-    github_raw_url = "https://github.com/Kozato01/goty/blob/main/GOTY2023/respostas.csv"
-
+    diretorio_atual = os.path.dirname(os.path.abspath(__file__))
+    caminho_csv = os.path.join(diretorio_atual, "respostas.csv")
     try:
-        # Baixar o conteúdo do arquivo CSV do GitHub
-        response = requests.get(github_raw_url)
-        response.raise_for_status()  # Verificar se houve algum erro no download
-
-        # Ler o conteúdo do CSV a partir do texto retornado pela requisição
-        csv_content = StringIO(response.text)
-
-        # Tentar carregar respostas do arquivo CSV
-        return pd.read_csv(csv_content)
-    
-    except requests.exceptions.RequestException as e:
-        # Lidar com erros de requisição
-        print(f"Erro ao baixar o arquivo CSV do GitHub: {e}")
-        return pd.DataFrame()
-    
+        return pd.read_csv(caminho_csv)
     except pd.errors.EmptyDataError:
-        # Se o arquivo estiver vazio, retornar DataFrame vazio
         return pd.DataFrame()
 
 def usuario_existente(respostas_df, email, nome, telegram):
@@ -178,66 +161,37 @@ def exibir_formulario():
     24: {"Categoria": "Melhor Adaptação - 2 pontos", "Opções": ["Castlevania: Nocturne", "Gran Turismo", "The Last of Us", "Super Mario Bros.: O Filme", "Twisted Metal"]},
     25: {"Categoria": "Jogo Mais Aguardado de 2024 - 2 pontos", "Opções": ["Final Fantasy VII Rebirth", "Hades II", "Like a Dragon: Infinite Wealth", "Star Wars Outlaws", "Tekken 8"]},
 }
-
-
-    # Inicializar categorias escolhidas
     categorias_escolhidas = {}
-
-    # Carregar respostas existentes do arquivo CSV
     respostas_df = carregar_respostas()
 
-    # Verificar se o usuário já preencheu o formulário
     if usuario_existente(respostas_df, email, nome, telegram):
         st.warning("Você já preencheu o formulário. Não é permitido preencher novamente.")
         return
 
-
-    # Loop para coletar respostas do usuário
     for numero, info_categoria in categorias_opcoes.items():
         categoria = info_categoria["Categoria"]
         opcoes = info_categoria["Opções"]
 
         if st.checkbox(f"{numero}. Escolher {categoria}", key=categoria):
-            # Mensagem informativa antes da caixa de seleção
             st.write("Clique abaixo para ver as opções:")
             with st.expander(f"Opções para {categoria}", expanded=False):
                 opcao_escolhida = st.selectbox(f"Escolha a opção em {categoria}:", opcoes)
                 categorias_escolhidas[categoria] = opcao_escolhida
-
-            # Adicionando ícone de confirmação à direita do expander
             st.markdown('<div style="float: right; margin-right: 20px;"><span style="color:green">&#10004;</span> Categoria escolhida: {}</div>'.format(categoria), unsafe_allow_html=True)
 
-    # Estilizando a tabela de escolhas do usuário
-    st.markdown(
-        "<h2 style='color: #ff6600; margin-top: 30px; background: linear-gradient(to right, #333333, #666666); padding: 10px; border-radius: 5px;'>Suas Escolhas</h2>",
-        unsafe_allow_html=True,
-    )
+    st.markdown("<h2 style='color: #ff6600; margin-top: 30px; background: linear-gradient(to right, #333333, #666666); padding: 10px; border-radius: 5px;'>Suas Escolhas</h2>", unsafe_allow_html=True)
     escolhas_usuario_df = pd.DataFrame(categorias_escolhidas.items(), columns=["Categoria", "Escolha"]).set_index("Categoria").T
     st.table(escolhas_usuario_df.style.set_table_styles([{"selector": "th", "props": [("background-color", "#333333"), ("color", "#ff6600")]}]))
 
-    # Adicionar campos de email, nome e nome no Telegram ao dicionário
     categorias_escolhidas["Email"] = email
     categorias_escolhidas["Nome"] = nome
     categorias_escolhidas["Nome no Telegram"] = telegram
 
-    # Botão de confirmação
     if st.button("Confirmar e Salvar Respostas"):
         novas_respostas_df = pd.DataFrame(categorias_escolhidas, index=[0])
         respostas_df = pd.concat([respostas_df, novas_respostas_df], ignore_index=True)
-
-        # Salvar respostas localmente
         respostas_df.to_csv("respostas.csv", index=False)
-        st.success("Respostas salvas localmente com sucesso!")
-
-        # Salvar no GitHub
-        try:
-            repo = git.Repo("https://github.com/Kozato01/goty/blob/main/GOTY2023/respostas.csv")  # Substitua com o caminho do seu repositório
-            repo.git.add("respostas.csv")
-            repo.git.commit(m="Atualizando respostas")
-            repo.git.push()
-            st.success("Respostas salvas no GitHub com sucesso!")
-        except Exception as e:
-            st.error(f"Erro ao salvar no GitHub: {str(e)}")
+        st.success("Respostas salvas com sucesso!")
 
 def baixar_respostas_usuario(email, nome):
     respostas_df = carregar_respostas()
