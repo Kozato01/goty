@@ -3,4 +3,5 @@ pybase64
 streamlit
 os
 git
+PyGithub
 requests
