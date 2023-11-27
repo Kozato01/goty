@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 import re
+import os 
 import snowflake.connector
 from snowflake.connector import ProgrammingError
 from pontuacoes import obter_categorias_escolhidas, obter_pontos_por_categoria, respostas_ganhadores_df
@@ -191,11 +192,11 @@ def criar_tabela_sql(connection, tabela, categorias_escolhidas):
 def exibir_formulario():
     st.markdown(
     """
-    <h1 style='color: #ffffff; text-align: center; background: linear-gradient(to right, #ff9900, #ff3300); padding: 5px; border-radius: 11px;'>
+    <h1 style='color: #ffffff; text-align: center; background: linear-gradient(to right, #ff9900, #ff3300); padding: 4px; border-radius: 8px;'>
         <img src='https://cdn.worldvectorlogo.com/logos/the-game-awards.svg' style='vertical-align: middle; height: 1em;'/> Votação - The Game Awards
     </h1>
     <div style='background: linear-gradient(to right, #ff9900, #f2f2f2); padding: 20px; border-radius: 10px;'>
-        <p style='color: #000000; font-size: 16px; text-align: center; background: linear-gradient(to right, #f2f2f2, #ffffff); padding: 15px; border-radius: 8px;'>
+        <p style='color: #000000; font-size: 16px; text-align: center; background: linear-gradient(to right, #f2f2f2, #ffffff); padding: 15px; border-radius: 4px;'>
             🎮 Bem-vindo ao Formulário de Votação do The Game Awards! Este é um evento descontraído entre amigos.
             Os resultados serão anunciados em 7 de Dezembro de 2023. Boa sorte!
             Para discussões e mais informações, participe do nosso grupo no 
@@ -265,7 +266,9 @@ def obter_respostas_usuario(categorias_escolhidas):
 
 def exibir_escolhas_usuario(categorias_escolhidas):
     st.markdown(
-        "<h2 style='color: #ffffff; margin-top: 20px; background: linear-gradient(to right, #333333, #ff6600); padding: 15px; border-radius: 8px; text-align: center; font-weight: bold;'>Visualização das Suas Escolhas</h2>",
+        """
+        <h2 style='color: #ffffff; margin-top: 20px; background: linear-gradient(to right, #9D28BD, #76a8f5, #C5E0FF); padding: 15px; border-radius: 8px; text-align: center; font-weight: bold;'>Respostas Cadastradas</h2>
+        """,
         unsafe_allow_html=True
     )
     escolhas_usuario_df = pd.DataFrame.from_dict(categorias_escolhidas, orient='index', columns=["Escolha"])
@@ -360,9 +363,10 @@ def visualizar_respostas_usuario(email, telegram, connection, tabela):
         respostas_df = respostas_df.rename(columns=novo_nome_colunas)
         st.markdown(
             """
-            <h2 style='color: #ffffff; margin-top: 20px; background: linear-gradient(to right, #333333, #ff6600); padding: 15px; border-radius: 8px; text-align: center; font-weight: bold;'>Respostas Cadastradas</h2>
+            <h2 style='color: #ffffff; margin-top: 20px; background: linear-gradient(to right, #9D28BD, #76a8f5, #C5E0FF); padding: 15px; border-radius: 8px; text-align: center; font-weight: bold;'>Respostas Cadastradas</h2>
             """,
-            unsafe_allow_html=True)
+            unsafe_allow_html=True
+        )
         st.dataframe(respostas_df.style
             .set_table_styles([{"selector": "th", "props": [("background-color", "#333333"), ("color", "#ff6600")]}])
             .apply(lambda x: ["background: linear-gradient(to right, #333333, #666666); color: #ff6600"] * len(x), axis=1)
@@ -417,11 +421,10 @@ snowflake_config = {
     'database': 'GOTY'
 }
 
+
+
 # Conecta ao Snowflake
 connection = conectar_snowflake(**snowflake_config)
-
-
-
 
 # Executa o aplicativo Streamlit
 if __name__ == "__main__":
