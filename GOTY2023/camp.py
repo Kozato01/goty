@@ -7,7 +7,7 @@ from pontuacoes import obter_categorias_escolhidas, obter_pontos_por_categoria, 
 from datetime import datetime
 
 # Constantes
-TABELA_PADRAO = "GOTY2023TELE"
+TABELA_PADRAO = "GOTY2023"
 cursor = None
 
 #Funciona o deleta do usuario. 
@@ -408,17 +408,17 @@ def fechar_cursor(cursor):
     except Exception as e:
         st.error(f"Erro ao fechar o cursor: {str(e)}")
 
-# Configurações do Snowflake
 snowflake_config = {
-    'account': '',
-    'username': '',
-    'password': '',
-    'warehouse': '',
-    'database': ''
+    'account': st.secrets.snowflake_credentials.account,
+    'username': st.secrets.snowflake_credentials.username,
+    'password': st.secrets.snowflake_credentials.password,
+    'warehouse': st.secrets.snowflake_credentials.warehouse,
+    'database': st.secrets.snowflake_credentials.database
 }
 
 # Conecta ao Snowflake
 connection = conectar_snowflake(**snowflake_config)
+
 
 # Executa o aplicativo Streamlit
 if __name__ == "__main__":
