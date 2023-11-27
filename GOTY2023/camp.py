@@ -67,11 +67,11 @@ def exibir_formulario_exclusao():
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        email_exclusao = st.text_input("Email:")
+        email_exclusao = st.text_input("Email:").lower()
     with col2:
-        nome_exclusao = st.text_input("Nome:")
+        nome_exclusao = st.text_input("Nome:").lower()
     with col3:
-        telegram_exclusao = st.text_input("Nome no Telegram:")
+        telegram_exclusao = st.text_input("Nome no Telegram:").lower()
 
     if st.button("Excluir Meus Dados"):
         apagar_dados_usuario(connection, 'GOTY2023', email_exclusao, nome_exclusao, telegram_exclusao)
@@ -299,9 +299,9 @@ def exibir_formulario_visualizacao_respostas():
 
     col1, col2 = st.columns(2)
     with col1:
-        email = st.text_input("Email:")
+        email = st.text_input("Email:").lower()
     with col2:
-        telegram = st.text_input("Nome no Telegram:")
+        telegram = st.text_input("Nome no Telegram:").lower()
 
     if st.button("Visualizar Respostas"):
         visualizar_respostas_usuario(email, telegram, connection, 'GOTY2023')
