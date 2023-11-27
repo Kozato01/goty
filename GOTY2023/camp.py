@@ -73,7 +73,7 @@ def exibir_formulario_exclusao():
         telegram_exclusao = st.text_input("Nome no Telegram:")
 
     if st.button("Excluir Meus Dados"):
-        apagar_dados_usuario(connection, 'Goty2023Tele1', email_exclusao, nome_exclusao, telegram_exclusao)
+        apagar_dados_usuario(connection, 'GOTY2023', email_exclusao, nome_exclusao, telegram_exclusao)
 
 
 
@@ -238,8 +238,8 @@ def exibir_formulario():
     respostas_usuario = obter_respostas_usuario(categorias_escolhidas)
     exibir_escolhas_usuario(respostas_usuario)
     if st.button("Confirmar e Salvar Respostas"):
-        criar_tabela_sql(connection, "Goty2023Tele1", categorias_escolhidas)
-        inserir_dados_usuario(connection, "Goty2023Tele1", email, nome, telegram, respostas_usuario)
+        criar_tabela_sql(connection, "GOTY2023", categorias_escolhidas)
+        inserir_dados_usuario(connection, "GOTY2023", email, nome, telegram, respostas_usuario)
 
 
 # Funções Auxiliares
@@ -301,7 +301,7 @@ def exibir_formulario_visualizacao_respostas():
         telegram = st.text_input("Nome no Telegram:")
 
     if st.button("Visualizar Respostas"):
-        visualizar_respostas_usuario(email, telegram, connection, 'Goty2023Tele1')
+        visualizar_respostas_usuario(email, telegram, connection, 'GOTY2023')
 
 
 # Função para visualizar as respostas do usuário
@@ -410,11 +410,11 @@ def fechar_cursor(cursor):
 
 # Configurações do Snowflake
 snowflake_config = {
-    'account': 'iq55768.sa-east-1.aws',
-    'username': 'kozato',
-    'password': 'Bigbar@1015',
-    'warehouse': 'COMPUTE_WH',
-    'database': 'GOTY'
+    'account': '',
+    'username': '',
+    'password': '',
+    'warehouse': '',
+    'database': ''
 }
 
 # Conecta ao Snowflake
