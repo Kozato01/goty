@@ -1,5 +1,4 @@
 pandas
-pybase64
 streamlit
 os
 snowflake-connector-python
