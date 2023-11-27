@@ -3,4 +3,4 @@ snowflake-connector-python==3.3.0
 streamlit==1.27.2
 requests
 datetime
-re
+
