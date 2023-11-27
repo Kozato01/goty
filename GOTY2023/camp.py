@@ -412,7 +412,7 @@ def fechar_cursor(cursor):
 #snowflake_credentials = st.secrets["snowflake_credentials"]
 
 # Conecta ao Snowflake
-connection = conectar_snowflake(**st.secrets.snowflake_credentials)
+connection = conectar_snowflake(**st.secrets["snowflake_credentials"])
 
 
 
