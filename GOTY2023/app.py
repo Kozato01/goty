@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import exibir_formulario, exibir_formulario_exclusao, exibir_formulario_visualizacao_respostas
+from camp import exibir_formulario, exibir_formulario_exclusao, exibir_formulario_visualizacao_respostas
 
 def definir_estilo_pagina():
     estilo = """
@@ -12,7 +12,7 @@ def definir_estilo_pagina():
                 margin: auto;
                 font-family: -apple-system, BlinkMacSystemFont, sans-serif;
                 overflow: auto;
-                background: linear-gradient(315deg, #001f3f 0%, #ff851b 100%);
+                background: linear-gradient(135deg, #011326 25%, #ff851b 75%);
                 background-size: cover;
                 background-attachment: fixed;
                 color: #ffffff; /* Cor do texto */
