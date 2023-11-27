@@ -8,12 +8,13 @@ from datetime import datetime
 
 # Constantes
 TABELA_PADRAO = "GOTY2023TELE"
+cursor = None
 
 #Funciona o deleta do usuario. 
 def apagar_dados_usuario(connection, tabela, email, nome, telegram):
+    cursor = None  # Definir cursor antes do bloco try
     try:
         cursor = connection.cursor()
-
         # Verificar se a tabela existe
         if not tabela_existe(cursor, tabela):
             st.warning(f"A tabela '{tabela}' não existe.")
@@ -25,13 +26,9 @@ def apagar_dados_usuario(connection, tabela, email, nome, telegram):
         if data_atual > data_limite_exclusao:
             st.warning("Não é permitido excluir dados após 07/12/2023.")
             return
-
-        # Verificar se o usuário existe antes de excluir
         if not verificar_existencia_usuario(connection, email, nome, telegram, tabela):
             st.warning("Usuário não encontrado. Nenhum dado foi excluído.")
             return
-
-        # Realizar a exclusão
         query = f"DELETE FROM {tabela} WHERE Email = %s AND Nome = %s AND Telegram = %s"
         cursor.execute(query, (email, nome, telegram))
         connection.commit()
@@ -43,9 +40,9 @@ def apagar_dados_usuario(connection, tabela, email, nome, telegram):
 
     except Exception as ex:
         st.error(f"Ocorreu um erro inesperado ao excluir dados do usuário: {str(ex)}")
-
     finally:
-        fechar_cursor(cursor)
+        if cursor is not None:
+            fechar_cursor(cursor)
 
 
 # Formulario de exclusão
@@ -134,6 +131,7 @@ def tabela_existe(cursor, tabela):
 
 # Função de inserir dados no banco, funciona. 
 def inserir_dados_usuario(connection, tabela, email, nome, telegram, respostas_usuario):
+    cursor = None
     try:
         cursor = connection.cursor()
         if verificar_existencia_usuario(connection, email, nome, telegram, tabela):
@@ -160,6 +158,7 @@ def inserir_dados_usuario(connection, tabela, email, nome, telegram, respostas_u
 
 # função pra criar tabela sql no snow
 def criar_tabela_sql(connection, tabela, categorias_escolhidas):
+    cursor = None  # Inicializa cursor fora do bloco try
     try:
         cursor = connection.cursor()
         cursor.execute(f"SHOW TABLES LIKE '{tabela.upper()}'")
@@ -180,7 +179,7 @@ def criar_tabela_sql(connection, tabela, categorias_escolhidas):
             '''
             cursor.execute(query)
             connection.commit()
-            #st.success(f"Tabela '{tabela}' criada com sucesso!")
+            # st.success(f"Tabela '{tabela}' criada com sucesso!")
     except snowflake.connector.errors.DatabaseError as e:
         st.error(f"Erro ao criar tabela: {str(e)}")
     except Exception as ex:
@@ -404,19 +403,18 @@ def contar_pontos(usuario_df, respostas_ganhadores_df):
 
 def fechar_cursor(cursor):
     try:
-        # Verifica se o cursor está aberto antes de fechar
-        if not cursor.is_closed():
+        if cursor is not None and not cursor.is_closed():
             cursor.close()
-    except Exception as ex:
-        st.error(f"Erro ao fechar o cursor: {str(ex)}")
+    except Exception as e:
+        st.error(f"Erro ao fechar o cursor: {str(e)}")
 
 # Configurações do Snowflake
 snowflake_config = {
-    'account': '',
-    'username': '',
-    'password': '',
-    'warehouse': '',
-    'database': ''
+    'account': 'iq55768.sa-east-1.aws',
+    'username': 'kozato',
+    'password': 'Bigbar@1015',
+    'warehouse': 'COMPUTE_WH',
+    'database': 'GOTY'
 }
 
 # Conecta ao Snowflake
