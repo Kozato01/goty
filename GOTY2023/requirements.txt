@@ -1,7 +1,7 @@
 pandas
-streamlit
+snowflake-connector-python==3.3.0
+streamlit==1.27.2
 os
-snowflake-connector-python
 requests
 datetime
 re
