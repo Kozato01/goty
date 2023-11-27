@@ -2,6 +2,7 @@ pandas
 pybase64
 streamlit
 os
-git
-PyGithub
+snowflake-connector-python
 requests
+datetime
+re
