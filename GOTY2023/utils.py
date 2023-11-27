@@ -98,6 +98,7 @@ def conectar_snowflake(account, username, password, warehouse, database, schema=
 
 # Funções de Verificação
 def verificar_existencia_usuario(connection, email=None, nome=None, telegram=None, tabela=TABELA_PADRAO):
+    cursor = None  # Inicializa cursor fora do bloco try
     try:
         cursor = connection.cursor()
         if not tabela_existe(cursor, tabela):
