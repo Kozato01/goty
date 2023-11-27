@@ -1,6 +1,0 @@
-pandas
-snowflake-connector-python==3.3.0
-streamlit
-requests
-datetime
-pyarrow==10.0.1
