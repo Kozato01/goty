@@ -408,12 +408,7 @@ def fechar_cursor(cursor):
     except Exception as e:
         st.error(f"Erro ao fechar o cursor: {str(e)}")
 
-[snowflake_credentials]
-account = ""
-username = ""
-password = ""
-warehouse = ""
-database = ""
+
 snowflake_credentials = st.secrets["snowflake_credentials"]
 
 # Conecta ao Snowflake
