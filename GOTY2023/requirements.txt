@@ -1,4 +1,6 @@
 pandas
-base64
 streamlit
-snowflake-connector-python
+snowflake-connector-python==3.3.0
+requests
+datetime
+pyarrow==10.0.1
