@@ -22,12 +22,6 @@ def definir_estilo_pagina():
     st.markdown(estilo, unsafe_allow_html=True)
 
 def main():
-    st.set_page_config(
-        page_title="GOTY 2023 - Formulário",
-        page_icon=":trophy:",
-        layout="wide",
-        initial_sidebar_state="expanded",
-    )
     definir_estilo_pagina()
 
     # Adicionar links para páginas
@@ -45,4 +39,10 @@ def main():
         exibir_formulario_exclusao()
 
 if __name__ == "__main__":
+    st.set_page_config(
+        page_title="GOTY 2023 - Formulário",
+        page_icon=":trophy:",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
     main()
