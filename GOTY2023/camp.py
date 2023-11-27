@@ -416,6 +416,7 @@ connection = conectar_snowflake(**st.secrets["snowflake_credentials"])
 
 
 
+
 # Executa o aplicativo Streamlit
 if __name__ == "__main__":
     exibir_formulario()
