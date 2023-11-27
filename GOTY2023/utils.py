@@ -1,117 +1,216 @@
 import pandas as pd
 import streamlit as st
-import base64
-import os
-from pontuacoes import obter_pontos_por_categoria
+import re
+import snowflake.connector
+from snowflake.connector import ProgrammingError
+from pontuacoes import obter_categorias_escolhidas, obter_pontos_por_categoria, respostas_ganhadores_df
+from datetime import datetime
 
+# Constantes
+TABELA_PADRAO = "GOTY2023TELE"
 
-#DIA 7 DE DEZEMBRO CORRIGIR!
-def Resultado():
-    return pd.DataFrame({
-    #  "Jogo do Ano - 10 pontos": [],
-    #   "Melhor Direção de Jogo - 5 pontos": [],
-    #   "Melhor Narrativa - 5 pontos": [],
-    #   "Melhor Direção de Arte - 5 pontos": [],
-    #   "Melhor Trilha Sonora - 5 pontos": [],
-    #   "Melhor Design de Áudio - 5 pontos": [],
-    #   "Melhor Atuação - 5 pontos": [],
-    #   "Inovação em Acessibilidade - 5 pontos": [],
-    #   "Jogos com Maior Impacto Social - 5 pontos": [],
-    #   "Melhor Jogo Contínuo - 5 pontos": [],
-    #   "Melhor Suporte Comunitário - 3 pontos": [],
-    #   "Melhor Jogo Independente - 3 pontos": [],
-    #   "Melhor Estreia de um Estúdio Indie - 3 pontos": [],
-    #   "Melhor Jogo Mobile - 3 pontos": [],
-    #   "Melhor VR / AR - 3 pontos": [],
-    #   "Melhor Jogo de Ação - 3 pontos": [],
-    #   "Melhor Jogo de Ação / Aventura - 3 pontos": [],
-    #   "Melhor RPG - 3 pontos": [],
-    #   "Melhor Jogo de Luta - 3 pontos": [],
-    #   "Melhor Jogo para Família - 3 pontos": [],
-    #   "Melhor Jogo de Simulação / Estratégia - 2 pontos": [],
-    #   "Melhor Jogo de Esporte / Corrida - 2 pontos": [],
-    #   "Melhor Jogo Multiplayer - 2 pontos": [],
-    #   "Melhor Adaptação - 2 pontos": [],
-    #   "Jogo Mais Aguardado de 2024 - 2 pontos": []
-    })
-
-def exibir_escolhas_usuario(categorias_escolhidas):
-    # Exibir escolhas do usuário em uma tabela
-    escolhas_usuario_df = pd.DataFrame(categorias_escolhidas.items(), columns=["Categoria", "Escolha"]).set_index("Categoria").T
-    st.table(escolhas_usuario_df)
-
-def carregar_respostas():
-    diretorio_atual = os.path.dirname(os.path.abspath(__file__))
-    caminho_csv = os.path.join(diretorio_atual, "respostas.csv")
+#Funciona o deleta do usuario. 
+def apagar_dados_usuario(connection, tabela, email, nome, telegram):
     try:
-        return pd.read_csv(caminho_csv)
-    except pd.errors.EmptyDataError:
-        return pd.DataFrame()
+        cursor = connection.cursor()
 
-def usuario_existente(respostas_df, email, nome, telegram):
-    # Verificar se o usuário já existe no DataFrame
-    if not respostas_df.empty and "Email" in respostas_df.columns and "Nome" in respostas_df.columns and "Nome no Telegram" in respostas_df.columns:
-        usuario_existente = (
-            (respostas_df["Email"] == email) |
-            (respostas_df["Nome"] == nome) |
-            (respostas_df["Nome no Telegram"] == telegram)
+        # Verificar se a tabela existe
+        if not tabela_existe(cursor, tabela):
+            st.warning(f"A tabela '{tabela}' não existe.")
+            return
+
+        data_limite_exclusao = datetime(2024, 12, 7)
+        data_atual = datetime.now()
+
+        if data_atual > data_limite_exclusao:
+            st.warning("Não é permitido excluir dados após 07/12/2023.")
+            return
+
+        # Verificar se o usuário existe antes de excluir
+        if not verificar_existencia_usuario(connection, email, nome, telegram, tabela):
+            st.warning("Usuário não encontrado. Nenhum dado foi excluído.")
+            return
+
+        # Realizar a exclusão
+        query = f"DELETE FROM {tabela} WHERE Email = %s AND Nome = %s AND Telegram = %s"
+        cursor.execute(query, (email, nome, telegram))
+        connection.commit()
+
+        st.success("Dados do usuário excluídos com sucesso!")
+
+    except snowflake.connector.errors.DatabaseError as e:
+        st.error(f"Erro ao excluir dados do usuário: {str(e)}")
+
+    except Exception as ex:
+        st.error(f"Ocorreu um erro inesperado ao excluir dados do usuário: {str(ex)}")
+
+    finally:
+        fechar_cursor(cursor)
+
+
+# Formulario de exclusão
+def exibir_formulario_exclusao():
+    # Adicionar estilo ao título
+    st.markdown(
+    """
+    <div style='background: linear-gradient(to right, #ff9900, #f2f2f2); padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
+        <h1 style='color: #ff3300; text-align: center;'>
+            <img src='https://medlimp.com.br/wp-content/uploads/2023/03/LIXEIRA-BRANCA-50L-SEM-POSTE-COM-HASTE-METALICA-JSN.png' style='vertical-align: middle; height: 1em;'/> Excluir Dados do Usuário
+        </h1>
+        <p style='color: #666666; font-size: 16px; text-align: center; background: linear-gradient(to right, #f2f2f2, #ffffff); padding: 15px; border-radius: 8px;'>
+            🚨 <strong>Aviso:</strong> A exclusão de dados é uma ação irreversível. Utilize esta opção apenas para corrigir informações incorretas
+            ou refazer seu formulário. A exclusão não será possível após a data limite.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        email_exclusao = st.text_input("Email:")
+    with col2:
+        nome_exclusao = st.text_input("Nome:")
+    with col3:
+        telegram_exclusao = st.text_input("Nome no Telegram:")
+
+    if st.button("Excluir Meus Dados"):
+        apagar_dados_usuario(connection, 'Goty2023Tele1', email_exclusao, nome_exclusao, telegram_exclusao)
+
+
+
+# Funções de Conexão
+def conectar_snowflake(account, username, password, warehouse, database, schema=None):
+    try:
+        connection = snowflake.connector.connect(
+            user=username,
+            password=password,
+            account=account,
+            warehouse=warehouse,
+            database=database,
+            schema=schema
         )
-        return usuario_existente.any()
-    else:
+        return connection
+    except snowflake.connector.errors.DatabaseError as e:
+        st.error(f"Erro ao conectar ao Snowflake: {str(e)}")
+        return None
+
+# Funções de Verificação
+def verificar_existencia_usuario(connection, email=None, nome=None, telegram=None, tabela=TABELA_PADRAO):
+    try:
+        cursor = connection.cursor()
+        if not tabela_existe(cursor, tabela):
+            st.warning(f"A tabela '{tabela}' não existe.")
+            return False
+
+        if email and nome and telegram:
+            # Consulta com todos os parâmetros
+            query = f"SELECT * FROM {tabela} WHERE Email = %s AND Nome = %s AND Telegram = %s"
+            cursor.execute(query, (email, nome, telegram))
+        elif email and telegram:
+            # Consulta com email e nome
+            query = f"SELECT * FROM {tabela} WHERE Email = %s AND Telegram = %s"
+            cursor.execute(query, (email, telegram))
+        else:
+            st.warning("Usuario não encontrando ou não existe.")
+            return False
+
+        return cursor.fetchone() is not None
+    except snowflake.connector.errors.ProgrammingError as e:
+        st.error(f"Erro ao executar consulta: {str(e)}")
         return False
-    
+    except Exception as ex:
+        st.error(f"Ocorreu um erro inesperado: {str(ex)}")
+        return False
+    finally:
+        fechar_cursor(cursor)
+
+# Funções de Tabela
+def tabela_existe(cursor, tabela):
+    cursor.execute(f"SHOW TABLES LIKE '{tabela.upper()}'")
+    return bool(cursor.fetchone())
+
+# Função de inserir dados no banco, funciona. 
+def inserir_dados_usuario(connection, tabela, email, nome, telegram, respostas_usuario):
+    try:
+        cursor = connection.cursor()
+        if verificar_existencia_usuario(connection, email, nome, telegram, tabela):
+            st.warning("⚠️ Você já preencheu o formulário. Não é permitido preencher novamente. Você pode apagar sua aposta atual até o dia 02/11/2023, caso queira preencher de novo.")
+            return
+        colunas_categorias = [
+            re.sub(r'[^a-zA-Z0-9_]', '_', categoria.split('-')[0].strip())
+            for categoria in respostas_usuario.keys()
+        ]
+        colunas_query = ', '.join(colunas_categorias)
+        placeholders = ', '.join(['%s' for _ in respostas_usuario.values()])
+        query = f"INSERT INTO {tabela} (email, nome, telegram, {colunas_query}) VALUES (%s, %s, %s, {placeholders})"
+        valores_insercao = [email, nome, telegram, *respostas_usuario.values()]
+        cursor.execute(query, valores_insercao)
+        connection.commit()
+        st.success("✨ Suas respostas para o GOTY foram cadastradas! Boa sorte! 🏆")
+    except snowflake.connector.errors.DatabaseError as e:
+        st.error(f"Erro ao inserir dados do usuário: {str(e)}")
+    except Exception as ex:
+        st.error(f"Ocorreu um erro inesperado ao inserir dados do usuário: {str(ex)}")
+    finally:
+        fechar_cursor(cursor)
 
 
-def download_csv_link(df, filename="resultado_usuario.csv"):
-    csv = df.to_csv(index=False, encoding="utf-8")
-    b64 = base64.b64encode(csv.encode()).decode()
-    href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">Baixar Resultado</a>'
-    return href
+# função pra criar tabela sql no snow
+def criar_tabela_sql(connection, tabela, categorias_escolhidas):
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"SHOW TABLES LIKE '{tabela.upper()}'")
+        tabela_existe = bool(cursor.fetchone())
+        if not tabela_existe:
+            colunas_categorias = [
+                re.sub(r'[^a-zA-Z0-9_]', '_', categoria_info['Categoria'].split('-')[0].strip())
+                for categoria_info in categorias_escolhidas.values()
+            ]
 
-def visualizar_respostas(email, nome, respostas_ganhadores_df=None):
-    respostas_df = carregar_respostas()
-    usuario_df = respostas_df[(respostas_df["Email"] == email) & (respostas_df["Nome"] == nome)]
+            query = f'''
+                CREATE TABLE IF NOT EXISTS public.{tabela} (
+                    email STRING,
+                    nome STRING,
+                    telegram STRING,
+                    {' STRING, '.join(colunas_categorias)} STRING
+                );
+            '''
+            cursor.execute(query)
+            connection.commit()
+            #st.success(f"Tabela '{tabela}' criada com sucesso!")
+    except snowflake.connector.errors.DatabaseError as e:
+        st.error(f"Erro ao criar tabela: {str(e)}")
+    except Exception as ex:
+        st.error(f"Ocorreu um erro inesperado ao criar tabela: {str(ex)}")
+    finally:
+        fechar_cursor(cursor)
 
-    if usuario_df.empty:
-        st.warning("Nenhuma resposta encontrada para o usuário.")
-    else:
-        # Exibir respostas do usuário em uma tabela
-        st.markdown(
-            f"<h2 style='color: #ff6600; margin-top: 30px; background: linear-gradient(to right, #333333, #666666); padding: 10px; border-radius: 5px;'>Respostas de {nome}</h2>",
-            unsafe_allow_html=True,
-        )
-        st.table(usuario_df.style.set_table_styles([{"selector": "th", "props": [("background-color", "#333333"), ("color", "#ff6600")]}]))
-
-        # Adicionar botão para baixar o resultado em CSV
-        st.markdown("<h3>Baixar Resultado</h3>", unsafe_allow_html=True)
-        st.write("Clique no botão abaixo para baixar o resultado em CSV.")
-        
-        # Usar a função de download_csv_link para obter o link de download
-        st.markdown(download_csv_link(usuario_df), unsafe_allow_html=True)
-
-        # Contar pontos apenas se os ganhadores estiverem disponíveis
-        if respostas_ganhadores_df is not None:
-            pontos = contar_pontos(usuario_df, respostas_ganhadores_df)
-            st.success(f"Você acumulou {pontos} pontos com suas respostas.")
-
-
-def contar_pontos(usuario_df, respostas_ganhadores_df):
-    pontos = 0
-
-    # Iterar sobre as colunas de respostas do usuário
-    for categoria, escolha_usuario in usuario_df.items():
-        if categoria in respostas_ganhadores_df.columns:
-            # Verificar se a escolha do usuário coincide com a escolha do ganhador
-            escolha_ganhador = respostas_ganhadores_df[categoria].iloc[0]
-            if escolha_usuario.iloc[0] == escolha_ganhador:
-                # Adicionar pontos com base na categoria
-                pontos += obter_pontos_por_categoria(categoria)
-
-    return pontos
-
-
+# Funções de Interface do formulario 
 def exibir_formulario():
-    # Criar campos de entrada para email, nome e nome no Telegram
+    st.markdown(
+    """
+    <h1 style='color: #ffffff; text-align: center; background: linear-gradient(to right, #ff9900, #ff3300); padding: 5px; border-radius: 11px;'>
+        <img src='https://cdn.worldvectorlogo.com/logos/the-game-awards.svg' style='vertical-align: middle; height: 1em;'/> Votação - The Game Awards
+    </h1>
+    <div style='background: linear-gradient(to right, #ff9900, #f2f2f2); padding: 20px; border-radius: 10px;'>
+        <p style='color: #000000; font-size: 16px; text-align: center; background: linear-gradient(to right, #f2f2f2, #ffffff); padding: 15px; border-radius: 8px;'>
+            🎮 Bem-vindo ao Formulário de Votação do The Game Awards! Este é um evento descontraído entre amigos.
+            Os resultados serão anunciados em 7 de Dezembro de 2023. Boa sorte!
+            Para discussões e mais informações, participe do nosso grupo no 
+            <a href='https://t.me/seu_grupo_do_telegram' target='_blank' style='color: #0099cc;'>
+                <img src='https://img.icons8.com/color/24/000000/telegram-app--v5.png' alt='Telegram'/>
+                Grupo do Telegram
+            </a>.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+
     col1, col2, col3 = st.columns(3)
     with col1:
         email = st.text_input("Email:").lower()
@@ -120,7 +219,6 @@ def exibir_formulario():
     with col3:
         telegram = st.text_input("Nome no Telegram:").lower()
 
-    # Verificar se os campos de nome, email e telegram foram preenchidos corretamente
     if not email or not "@" in email:
         st.warning("Por favor, insira um endereço de e-mail válido.")
         return
@@ -132,76 +230,197 @@ def exibir_formulario():
     if not telegram:
         st.warning("Por favor, insira seu nome no Telegram.")
         return
-
-    # Dicionário de categorias e opções
-    categorias_opcoes = {
-    1: {"Categoria": "Jogo do Ano - 10 pontos", "Opções": ["Alan Wake 2", "Baldur's Gate 3", "Marvel's Spider-Man 2", "Resident Evil 4 Remake", "Super Mario Bros. Wonder", "The Legend of Zelda: Tears of the Kingdom"]},
-    2: {"Categoria": "Melhor Direção de Jogo - 5 pontos", "Opções": ["Alan Wake 2", "Baldur's Gate 3", "Marvel's Spider-Man 2", "Super Mario Bros. Wonder", "The Legend of Zelda: Tears of the Kingdom"]},
-    3: {"Categoria": "Melhor Narrativa - 5 pontos", "Opções": ["Alan Wake 2", "Baldur's Gate 3", "Cyberpunk 2077: Phantom Liberty", "Final Fantasy XVI", "Marvel's Spider-Man 2"]},
-    4: {"Categoria": "Melhor Direção de Arte - 5 pontos", "Opções": ["Alan Wake 2", "Hi-Fi Rush", "Lies of P", "Super Mario Bros. Wonder", "The Legend of Zelda: Tears of the Kingdom"]},
-    5: {"Categoria": "Melhor Trilha Sonora - 5 pontos", "Opções": ["Alan Wake 2, por Petri Alanko", "Baldur's Gate 3, por Borislav Slavov", "Final Fantasy XVI, por Masayoshi Soken", "Hi-Fi Rush, por Shuichi Kobori", "The Legend of Zelda: Tears of the Kingdom, por Nintendo Sound Team"]},
-    6: {"Categoria": "Melhor Design de Áudio - 5 pontos", "Opções": ["Alan Wake 2", "Dead Space", "Marvel's Spider-Man 2", "Hi-Fi Rush", "Resident Evil 4 Remake"]},
-    7: {"Categoria": "Melhor Atuação - 5 pontos", "Opções": ["Ben Starr, por Final Fantasy XVI", "Cameron Monaghan, por Star Wars Jedi: Survivor", "Idris Elba, por Cyberpunk 2077: Phantom Liberty", "Melanie Liburd, por Alan Wake 2", "Neil Newbon, por Baldur's Gate 3", "Yuri Lowenthal, por Marvel's Spider-Man 2"]},
-    8: {"Categoria": "Inovação em Acessibilidade - 5 pontos", "Opções": ["Diablo IV", "Forza Motorsport", "Hi-Fi Rush", "Marvel's Spider-Man 2", "Mortal Kombat 1", "Street Fighter 6"]},
-    9: {"Categoria": "Jogos com Maior Impacto Social - 5 pontos", "Opções": ["A Space for the Unbound", "Chants of Sennaar", "Goodbye Volcano High", "Tchia", "Terra Nil", "Venba"]},
-    10: {"Categoria": "Melhor Jogo Contínuo - 5 pontos", "Opções": ["Apex Legends", "Cyberpunk 2077", "Final Fantasy XIV", "Fortnite", "Genshin Impact"]},
-    11: {"Categoria": "Melhor Suporte Comunitário - 3 pontos", "Opções": ["Baldur's Gate 3", "Cyberpunk 2077", "Destiny 2", "Final Fantasy XIV", "No Man's Sky"]},
-    12: {"Categoria": "Melhor Jogo Independente - 3 pontos", "Opções": ["Coccoon", "Dave the Diver", "Dredge", "Sea of Stars", "Viewfinder"]},
-    13: {"Categoria": "Melhor Estreia de um Estúdio Indie - 3 pontos", "Opções": ["Coccoon", "Dredge", "Pizza Tower", "Venba", "Viewfinder"]},
-    14: {"Categoria": "Melhor Jogo Mobile - 3 pontos", "Opções": ["Final Fantasy VII: Ever Crisis", "Hello Kitty Island Adventure", "Honkai: Star Rail", "Monster Hunter Now", "Terra Nil"]},
-    15: {"Categoria": "Melhor VR / AR - 3 pontos", "Opções": ["Gran Turismo 7", "Horizon Call of the Mountain", "Humanity", "Resident Evil Village VR Mode", "Synapse"]},
-    16: {"Categoria": "Melhor Jogo de Ação - 3 pontos", "Opções": ["Armored Core VI: Fires of Rubicorn", "Dead Island 2", "Ghostrunner 2", "Hi-Fi Rush", "Remnant 2"]},
-    17: {"Categoria": "Melhor Jogo de Ação / Aventura - 3 pontos", "Opções": ["Alan Wake 2", "Marvel's Spider-Man 2", "Resident Evil 4 Remake", "Star Wars Jedi: Survivor", "The Legend of Zelda: Tears of the Kingdom"]},
-    18: {"Categoria": "Melhor RPG - 3 pontos", "Opções": ["Baldur's Gate 3", "Final Fantasy XVI", "Lies of P", "Sea of Stars", "Starfield"]},
-    19: {"Categoria": "Melhor Jogo de Luta - 3 pontos", "Opções": ["God of Rock", "Mortal Kombat 1", "Nickelodeon All-Star Brawl 2", "Pocket Bravery", "Street Fighter 6"]},
-    20: {"Categoria": "Melhor Jogo para Família - 3 pontos", "Opções": ["Disney Illusion Island", "Party Animals", "Pikmin 4", "Sonic Superstars", "Super Mario Bros. Wonder"]},
-    21: {"Categoria": "Melhor Jogo de Simulação / Estratégia - 2 pontos", "Opções": ["Advance Wars 1+2: Re-boot camp", "Cities: Skylines II", "Company of Heroes 3", "Fire Emblem Engage", "Pikmin 4"]},
-    22: {"Categoria": "Melhor Jogo de Esporte / Corrida - 2 pontos", "Opções": ["EA Sports FC 24", "F1 23", "Forza Motorspot", "Hot Wheels Unleashed 2: Turbocharged", "The Crew Motorfest"]},
-    23: {"Categoria": "Melhor Jogo Multiplayer - 2 pontos", "Opções": ["Baldur's Gate 3", "Diablo IV", "Party Animals", "Street Fighter 6", "Super Mario Bros. Wonder"]},
-    24: {"Categoria": "Melhor Adaptação - 2 pontos", "Opções": ["Castlevania: Nocturne", "Gran Turismo", "The Last of Us", "Super Mario Bros.: O Filme", "Twisted Metal"]},
-    25: {"Categoria": "Jogo Mais Aguardado de 2024 - 2 pontos", "Opções": ["Final Fantasy VII Rebirth", "Hades II", "Like a Dragon: Infinite Wealth", "Star Wars Outlaws", "Tekken 8"]},
-}
-    categorias_escolhidas = {}
-    respostas_df = carregar_respostas()
-
-    if usuario_existente(respostas_df, email, nome, telegram):
+    categorias_escolhidas = obter_categorias_escolhidas()
+    if verificar_existencia_usuario(connection, email, nome, telegram):
         st.warning("Você já preencheu o formulário. Não é permitido preencher novamente.")
         return
+    
+    respostas_usuario = obter_respostas_usuario(categorias_escolhidas)
+    exibir_escolhas_usuario(respostas_usuario)
+    if st.button("Confirmar e Salvar Respostas"):
+        criar_tabela_sql(connection, "Goty2023Tele1", categorias_escolhidas)
+        inserir_dados_usuario(connection, "Goty2023Tele1", email, nome, telegram, respostas_usuario)
 
-    for numero, info_categoria in categorias_opcoes.items():
-        categoria = info_categoria["Categoria"]
-        opcoes = info_categoria["Opções"]
+
+# Funções Auxiliares
+def obter_respostas_usuario(categorias_escolhidas):
+    respostas_usuario = {}
+
+    for numero, categoria_info in categorias_escolhidas.items():
+        categoria = categoria_info["Categoria"]
+        opcoes = categoria_info["Opções"]
 
         if st.checkbox(f"{numero}. Escolher {categoria}", key=categoria):
             st.write("Clique abaixo para ver as opções:")
             with st.expander(f"Opções para {categoria}", expanded=False):
                 opcao_escolhida = st.selectbox(f"Escolha a opção em {categoria}:", opcoes)
-                categorias_escolhidas[categoria] = opcao_escolhida
+                respostas_usuario[categoria] = opcao_escolhida
             st.markdown('<div style="float: right; margin-right: 20px;"><span style="color:green">&#10004;</span> Categoria escolhida: {}</div>'.format(categoria), unsafe_allow_html=True)
+    escolhas_usuario_dict = {categoria: opcao for categoria, opcao in respostas_usuario.items()}
+    escolhas_usuario_df = pd.DataFrame.from_dict(escolhas_usuario_dict, orient='index', columns=["Escolha"])
 
-    st.markdown("<h2 style='color: #ff6600; margin-top: 30px; background: linear-gradient(to right, #333333, #666666); padding: 10px; border-radius: 5px;'>Suas Escolhas</h2>", unsafe_allow_html=True)
-    escolhas_usuario_df = pd.DataFrame(categorias_escolhidas.items(), columns=["Categoria", "Escolha"]).set_index("Categoria").T
-    st.table(escolhas_usuario_df.style.set_table_styles([{"selector": "th", "props": [("background-color", "#333333"), ("color", "#ff6600")]}]))
+    return respostas_usuario
 
-    categorias_escolhidas["Email"] = email
-    categorias_escolhidas["Nome"] = nome
-    categorias_escolhidas["Nome no Telegram"] = telegram
 
-    if st.button("Confirmar e Salvar Respostas"):
-        novas_respostas_df = pd.DataFrame(categorias_escolhidas, index=[0])
-        respostas_df = pd.concat([respostas_df, novas_respostas_df], ignore_index=True)
-        respostas_df.to_csv("respostas.csv", index=False)
-        st.success("Respostas salvas com sucesso!")
 
-def baixar_respostas_usuario(email, nome):
-    respostas_df = carregar_respostas()
-    usuario_df = respostas_df[(respostas_df["Email"] == email) & (respostas_df["Nome"] == nome)]
-    if not usuario_df.empty:
-        respostas_usuario_df = pd.concat([Resultado(), usuario_df], ignore_index=True)
-        caminho_csv_usuario = f"{nome}_respostas.csv"
-        respostas_usuario_df.to_csv(caminho_csv_usuario, index=False)
-        st.success(f"**Respostas de {nome} salvas em {caminho_csv_usuario}.**")
-        #st.markdown(f"**[Baixar suas respostas](sandbox:/view/{caminho_csv_usuario})**")
+def exibir_escolhas_usuario(categorias_escolhidas):
+    st.markdown(
+        "<h2 style='color: #ffffff; margin-top: 20px; background: linear-gradient(to right, #333333, #ff6600); padding: 15px; border-radius: 8px; text-align: center; font-weight: bold;'>Visualização das Suas Escolhas</h2>",
+        unsafe_allow_html=True
+    )
+    escolhas_usuario_df = pd.DataFrame.from_dict(categorias_escolhidas, orient='index', columns=["Escolha"])
+    escolhas_usuario_df = escolhas_usuario_df.T
+    estilo_df = {
+        "selector": "th",
+        "props": [("background-color", "#333333"), ("color", "#ff6600")]
+    }
+    st.dataframe(escolhas_usuario_df.style
+        .set_table_styles([estilo_df])
+        .apply(lambda x: ["background: linear-gradient(to right, #333333, #666666); color: #ff6600"] * len(x), axis=1)
+    )
 
-    else:
-        st.warning("Nenhuma resposta encontrada para o usuário.")
+def exibir_formulario_visualizacao_respostas():
+    st.markdown(
+        """
+        <div style='background: linear-gradient(to right, #ff9900, #f2f2f2); padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
+            <h1 style='color: #ff3300; text-align: center;'>
+                <img src='https://cdn3.iconfinder.com/data/icons/web-and-seo-31/16/invisible-eye-512.png' style='vertical-align: middle; height: 1em;'/> Visualizar Respostas
+            </h1>
+            <p style='color: #666666; font-size: 16px; text-align: center; background: linear-gradient(to right, #f2f2f2, #ffffff); padding: 15px; border-radius: 8px;'>
+                📋 Aqui você pode visualizar suas respostas cadastradas no formulário. No dia do evento, você saberá quantos pontos acumulou com suas escolhas!
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    col1, col2 = st.columns(2)
+    with col1:
+        email = st.text_input("Email:")
+    with col2:
+        telegram = st.text_input("Nome no Telegram:")
+
+    if st.button("Visualizar Respostas"):
+        visualizar_respostas_usuario(email, telegram, connection, 'Goty2023Tele1')
+
+
+# Função para visualizar as respostas do usuário
+def visualizar_respostas_usuario(email, telegram, connection, tabela):
+    try:
+        cursor = connection.cursor()
+
+        # Verificar se a tabela existe
+        if not tabela_existe(cursor, tabela):
+            st.warning(f"A tabela '{tabela}' não existe.")
+            return
+
+        # Verificar se o usuário existe
+        if not verificar_existencia_usuario(connection, email, telegram=telegram, tabela=tabela):
+            st.warning("Usuário não encontrado. Nenhuma resposta disponível.")
+            return
+
+        # Consultar as respostas do usuário
+        query = f"SELECT * FROM {tabela} WHERE Email = %s AND Telegram = %s"
+        cursor.execute(query, (email, telegram))
+        usuario_respostas = cursor.fetchone()
+
+        # Criar um DataFrame com as respostas do usuário
+        respostas_df = pd.DataFrame([usuario_respostas], columns=[desc[0] for desc in cursor.description])
+
+        # Mapear as colunas para os novos nomes
+        novo_nome_colunas = {
+            "JOGO_DO_ANO": "Jogo do Ano - 10 pontos",
+            "MELHOR_DIRE__O_DE_JOGO": "Melhor Direção de Jogo - 5 pontos",
+            "MELHOR_NARRATIVA": "Melhor Narrativa - 5 pontos",
+            "MELHOR_DIRE__O_DE_ARTE": "Melhor Direção de Arte - 5 pontos",
+            "MELHOR_TRILHA_SONORA": "Melhor Trilha Sonora - 5 pontos",
+            "MELHOR_DESIGN_DE__UDIO": "Melhor Design de Áudio - 5 pontos",
+            "MELHOR_ATUA__O": "Melhor Atuação - 5 pontos",
+            "INOVA__O_EM_ACESSIBILIDADE": "Inovação em Acessibilidade - 5 pontos",
+            "JOGOS_COM_MAIOR_IMPACTO_SOCIAL": "Jogos com Maior Impacto Social - 5 pontos",
+            "MELHOR_JOGO_CONT_NUO": "Melhor Jogo Contínuo - 5 pontos",
+            "MELHOR_SUPORTE_COMUNIT_RIO": "Melhor Suporte Comunitário - 3 pontos",
+            "MELHOR_JOGO_INDEPENDENTE": "Melhor Jogo Independente - 3 pontos",
+            "MELHOR_ESTREIA_DE_UM_EST_DIO_INDIE": "Melhor Estreia de um Estúdio Indie - 3 pontos",
+            "MELHOR_JOGO_MOBILE": "Melhor Jogo Mobile - 3 pontos",
+            "MELHOR_VR___AR": "Melhor VR / AR - 3 pontos",
+            "MELHOR_JOGO_DE_A__O": "Melhor Jogo de Ação - 3 pontos",
+            "MELHOR_JOGO_DE_A__O___AVENTURA": "Melhor Jogo de Ação / Aventura - 3 pontos",
+            "MELHOR_RPG": "Melhor RPG - 3 pontos",
+            "MELHOR_JOGO_DE_LUTA": "Melhor Jogo de Luta - 3 pontos",
+            "MELHOR_JOGO_PARA_FAM_LIA": "Melhor Jogo para Família - 3 pontos",
+            "MELHOR_JOGO_DE_SIMULA__O___ESTRAT_GIA": "Melhor Jogo de Simulação / Estratégia - 2 pontos",
+            "MELHOR_JOGO_DE_ESPORTE___CORRIDA": "Melhor Jogo de Esporte / Corrida - 2 pontos",
+            "MELHOR_JOGO_MULTIPLAYER": "Melhor Jogo Multiplayer - 2 pontos",
+            "MELHOR_ADAPTA__O": "Melhor Adaptação - 2 pontos",
+            "JOGO_MAIS_AGUARDADO_DE_2024": "Jogo Mais Aguardado de 2024 - 2 pontos"
+        }
+
+        # Renomear as colunas
+        respostas_df = respostas_df.rename(columns=novo_nome_colunas)
+        st.markdown(
+            """
+            <h2 style='color: #ffffff; margin-top: 20px; background: linear-gradient(to right, #333333, #ff6600); padding: 15px; border-radius: 8px; text-align: center; font-weight: bold;'>Respostas Cadastradas</h2>
+            """,
+            unsafe_allow_html=True)
+        st.dataframe(respostas_df.style
+            .set_table_styles([{"selector": "th", "props": [("background-color", "#333333"), ("color", "#ff6600")]}])
+            .apply(lambda x: ["background: linear-gradient(to right, #333333, #666666); color: #ff6600"] * len(x), axis=1)
+        )
+        contar_pontos(respostas_df, respostas_ganhadores_df)
+
+    except snowflake.connector.errors.DatabaseError as e:
+        st.error(f"Erro ao consultar respostas do usuário: {str(e)}")
+
+    except Exception as ex:
+        st.error(f"Ocorreu um erro inesperado ao consultar respostas do usuário: {str(ex)}")
+
+    finally:
+        fechar_cursor(cursor)
+
+
+
+
+def contar_pontos(usuario_df, respostas_ganhadores_df):
+    pontos = 0
+    respostas_ganhadores_df = respostas_ganhadores_df()
+    usuario_lista = [(categoria, escolha_usuario.iloc[0]) for categoria, escolha_usuario in usuario_df.items()]
+
+    st.markdown("<h2 style='color: #ff6600;'>Contagem de Pontos</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 16px;'>Aqui estão os resultados da contagem de pontos:</p>", unsafe_allow_html=True)
+
+    for categoria, escolha_usuario in usuario_lista:
+        if categoria in respostas_ganhadores_df.columns:
+            escolha_ganhador = respostas_ganhadores_df[categoria].iloc[0]
+            if escolha_usuario == escolha_ganhador:
+                pontos += obter_pontos_por_categoria(categoria)
+                st.markdown(f"<p style='color: #00cc00; font-size: 14px;'>✅ {categoria}: {escolha_usuario} (GOTY2023)</p>", unsafe_allow_html=True)
+            else:
+                st.markdown(f"<p style='color: #ff0000; font-size: 14px;'>❌ {categoria}: {escolha_usuario} (GOTY2023)</p>", unsafe_allow_html=True)
+
+    st.markdown(f"<p style='font-size: 18px; margin-top: 20px;'>Pontos totais: <span style='color: #ff6600;'>{pontos}</span></p>", unsafe_allow_html=True)
+    return pontos
+
+def fechar_cursor(cursor):
+    try:
+        # Verifica se o cursor está aberto antes de fechar
+        if not cursor.is_closed():
+            cursor.close()
+    except Exception as ex:
+        st.error(f"Erro ao fechar o cursor: {str(ex)}")
+
+# Configurações do Snowflake
+snowflake_config = {
+    'account': '',
+    'username': '',
+    'password': '',
+    'warehouse': '',
+    'database': ''
+}
+
+# Conecta ao Snowflake
+connection = conectar_snowflake(**snowflake_config)
+
+# Executa o aplicativo Streamlit
+if __name__ == "__main__":
+    exibir_formulario()
