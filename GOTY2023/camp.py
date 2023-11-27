@@ -409,12 +409,11 @@ def fechar_cursor(cursor):
         st.error(f"Erro ao fechar o cursor: {str(e)}")
 
 [snowflake_credentials]
-account = "seu_account"
-username = "seu_username"
-password = "sua_senha"
-warehouse = "seu_warehouse"
-database = "seu_database"
-
+account = ""
+username = ""
+password = ""
+warehouse = ""
+database = ""
 snowflake_credentials = st.secrets["snowflake_credentials"]
 
 # Conecta ao Snowflake
