@@ -408,16 +408,18 @@ def fechar_cursor(cursor):
     except Exception as e:
         st.error(f"Erro ao fechar o cursor: {str(e)}")
 
-snowflake_config = {
-    'account': st.secrets.snowflake_credentials.account,
-    'username': st.secrets.snowflake_credentials.username,
-    'password': st.secrets.snowflake_credentials.password,
-    'warehouse': st.secrets.snowflake_credentials.warehouse,
-    'database': st.secrets.snowflake_credentials.database
-}
+[snowflake_credentials]
+account = "seu_account"
+username = "seu_username"
+password = "sua_senha"
+warehouse = "seu_warehouse"
+database = "seu_database"
+
+snowflake_credentials = st.secrets["snowflake_credentials"]
 
 # Conecta ao Snowflake
-connection = conectar_snowflake(**snowflake_config)
+connection = conectar_snowflake(**snowflake_credentials)
+
 
 
 # Executa o aplicativo Streamlit
