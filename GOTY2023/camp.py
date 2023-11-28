@@ -426,6 +426,4 @@ snowflake_config = {
 # Conecta ao Snowflake
 connection = conectar_snowflake(**snowflake_config)
 
-# Executa o aplicativo Streamlit
-if __name__ == "__main__":
-    exibir_formulario()
+
