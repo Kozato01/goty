@@ -65,7 +65,6 @@ def main():
 
     elif page == "Visualizar Respostas":
         exibir_formulario_visualizacao_respostas()
-        pass
 
     elif page == "Excluir Dados":
         exibir_formulario_exclusao()
