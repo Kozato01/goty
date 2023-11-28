@@ -6,6 +6,9 @@ import snowflake.connector
 from snowflake.connector import ProgrammingError
 from pontuacoes import obter_categorias_escolhidas, obter_pontos_por_categoria, respostas_ganhadores_df
 from datetime import datetime
+import warnings
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # Constantes
 TABELA_PADRAO = "GOTY2023"
