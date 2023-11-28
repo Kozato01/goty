@@ -1,5 +1,8 @@
 import streamlit as st
 from camp import exibir_formulario, exibir_formulario_exclusao, exibir_formulario_visualizacao_respostas
+import warnings
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def definir_estilo_pagina():
     estilo = """
