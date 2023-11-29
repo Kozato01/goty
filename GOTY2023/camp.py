@@ -204,7 +204,7 @@ def exibir_formulario():
             Os resultados serão anunciados em 7 de Dezembro de 2023. Boa sorte!
             Para discussões e mais informações, participe do nosso grupo no 
             <a href='https://t.me/seu_grupo_do_telegram' target='_blank' style='color: #0099cc;'>
-                <img src='https://img.icons8.com/color/24/000000/telegram-app--v5.png' alt='Telegram'/>
+                <img src='https://img.icons8.com/color/24/000000/telegram-app--v5.png' alt='https://t.me/monsterhunterbr'/>
                 Grupo do Telegram
             </a>.
         </p>
@@ -422,19 +422,23 @@ def contar_pontos(usuario_df, respostas_ganhadores_df):
 
             pontos += pontos_categoria
 
-    # Criar DataFrame com os resultados
-    df_resultados = pd.DataFrame(resultados)
+    # Verificar se há resultados para exibir
+    if not resultados:
+        st.markdown("<p style='font-size: 16px; text-align: center; color: #FFFFFF;'>Os resultados ainda não estão disponíveis.</p>", unsafe_allow_html=True)
+    else:
+        # Criar DataFrame com os resultados
+        df_resultados = pd.DataFrame(resultados)
 
-    # Adicionar cores de fundo à tabela
-    st.table(df_resultados.style.set_table_styles([
-        {'selector': 'th', 'props': [('background-color', '#9932CC'), ('color', '#FFFFFF')]},
-        {'selector': 'td', 'props': [('background-color', '#ffffff'), ('color', '#000000')]},
-        {'selector': 'tr:hover', 'props': [('background-color', '#DDA0DD')]}
-    ]))
-    st.markdown(
-        f"<p style='font-size: 26px; margin-top: 20px; text-align: center; color: #9932CC; font-weight: bold;'>Pontuação Total: {pontos}</p>",
-        unsafe_allow_html=True
-    )
+        # Adicionar cores de fundo à tabela
+        st.table(df_resultados.style.set_table_styles([
+            {'selector': 'th', 'props': [('background-color', '#9932CC'), ('color', '#FFFFFF')]},
+            {'selector': 'td', 'props': [('background-color', '#ffffff'), ('color', '#000000')]},
+            {'selector': 'tr:hover', 'props': [('background-color', '#DDA0DD')]}
+        ]))
+        st.markdown(
+            f"<p style='font-size: 26px; margin-top: 20px; text-align: center; color: #9932CC; font-weight: bold;'>Pontuação Total: {pontos}</p>",
+            unsafe_allow_html=True
+        )
     st.markdown("</div>", unsafe_allow_html=True)
 
     return pontos
