@@ -60,7 +60,7 @@ def main():
     definir_estilo_pagina()
 
     # Adicionar links para páginas
-    st.sidebar.markdown("<h3 style='color: #000000;'>Navegação:</h3>", unsafe_allow_html=True)
+    st.sidebar.markdown("<h3 style='color: #656b75;'>Navegação:</h3>", unsafe_allow_html=True)
     page = st.sidebar.radio("", ["Formulário", "Visualizar Respostas", "Excluir Dados"], key="sidebar")
 
     if page == "Formulário":
