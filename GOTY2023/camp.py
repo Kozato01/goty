@@ -54,15 +54,15 @@ def exibir_formulario_exclusao():
     # Adicionar estilo ao título
     st.markdown(
     """
-    <div style='background: linear-gradient(to right, #ff9900, #f2f2f2); padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
-        <h1 style='color: #ff3300; text-align: center;'>
+    <div style='background: linear-gradient(to right, #9D28BD, #76a8f5, #C5E0FF); padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
+        <h1 style='color: #ffffff; text-align: center;'>
             <img src='https://medlimp.com.br/wp-content/uploads/2023/03/LIXEIRA-BRANCA-50L-SEM-POSTE-COM-HASTE-METALICA-JSN.png' style='vertical-align: middle; height: 1em;'/> Excluir Dados do Usuário
         </h1>
         <p style='color: #666666; font-size: 16px; text-align: center; background: linear-gradient(to right, #f2f2f2, #ffffff); padding: 15px; border-radius: 8px;'>
-            🚨 <strong>Aviso:</strong> A exclusão de dados é uma ação irreversível. Utilize esta opção apenas para corrigir informações incorretas
-            ou refazer seu formulário. A exclusão não será possível após a data limite.
+            🚨 <strong>Aviso:</strong> A exclusão de dados é uma ação irreversível. Utilize esta opção apenas para corrigir informações incorretas ou refazer seu formulário. A exclusão não será possível após a data limite.
         </p>
     </div>
+
     """,
     unsafe_allow_html=True,
 )
@@ -195,11 +195,11 @@ def criar_tabela_sql(connection, tabela, categorias_escolhidas):
 def exibir_formulario():
     st.markdown(
     """
-    <h1 style='color: #ffffff; text-align: center; background: linear-gradient(to right, #ff9900, #ff3300); padding: 4px; border-radius: 8px;'>
+    <h1 style='color: #ffffff; margin-top: 20px; background: linear-gradient(to right, #9D28BD, #76a8f5, #C5E0FF); padding: 15px; border-radius: 8px; text-align: center; font-weight: bold;'>
         <img src='https://cdn.worldvectorlogo.com/logos/the-game-awards.svg' style='vertical-align: middle; height: 1em;'/> Votação - The Game Awards
     </h1>
-    <div style='background: linear-gradient(to right, #ff9900, #f2f2f2); padding: 20px; border-radius: 10px;'>
-        <p style='color: #000000; font-size: 16px; text-align: center; background: linear-gradient(to right, #f2f2f2, #ffffff); padding: 15px; border-radius: 4px;'>
+    <div style='background: linear-gradient(to right, #9D28BD, #76a8f5, #C5E0FF); padding: 20px; border-radius: 10px;'>
+    <p style='color: #000000; font-size: 16px; text-align: center; background: linear-gradient(to right, #f2f2f2, #ffffff); padding: 15px; border-radius: 4px;'>
             🎮 Bem-vindo ao Formulário de Votação do The Game Awards! Este é um evento descontraído entre amigos.
             Os resultados serão anunciados em 7 de Dezembro de 2023. Boa sorte!
             Para discussões e mais informações, participe do nosso grupo no 
@@ -288,14 +288,15 @@ def exibir_escolhas_usuario(categorias_escolhidas):
 def exibir_formulario_visualizacao_respostas():
     st.markdown(
         """
-        <div style='background: linear-gradient(to right, #ff9900, #f2f2f2); padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
-            <h1 style='color: #ff3300; text-align: center;'>
+        <div style='background: linear-gradient(to right, #9D28BD, #76a8f5, #C5E0FF); padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
+            <h1 style='color: #ffffff; text-align: center;'>
                 <img src='https://cdn3.iconfinder.com/data/icons/web-and-seo-31/16/invisible-eye-512.png' style='vertical-align: middle; height: 1em;'/> Visualizar Respostas
             </h1>
             <p style='color: #666666; font-size: 16px; text-align: center; background: linear-gradient(to right, #f2f2f2, #ffffff); padding: 15px; border-radius: 8px;'>
                 📋 Aqui você pode visualizar suas respostas cadastradas no formulário. No dia do evento, você saberá quantos pontos acumulou com suas escolhas!
             </p>
         </div>
+
         """,
         unsafe_allow_html=True,
     )
@@ -393,19 +394,49 @@ def contar_pontos(usuario_df, respostas_ganhadores_df):
     respostas_ganhadores_df = respostas_ganhadores_df()
     usuario_lista = [(categoria, escolha_usuario.iloc[0]) for categoria, escolha_usuario in usuario_df.items()]
 
-    st.markdown("<h2 style='color: #ff6600;'>Contagem de Pontos</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 16px;'>Aqui estão os resultados da contagem de pontos:</p>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div style='background-color: #FFFFFF; padding: 5px; border-radius: 5px; margin-top: 5px;'>
+            <h2 style='color: #9932CC; text-align: center;'>Contagem de Pontos</h2>
+            <p style='font-size: 16px; text-align: center; color: #000000;'>Aqui estão os resultados da contagem de pontos:</p>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Criar lista de resultados para tabela
+    resultados = []
 
     for categoria, escolha_usuario in usuario_lista:
         if categoria in respostas_ganhadores_df.columns:
             escolha_ganhador = respostas_ganhadores_df[categoria].iloc[0]
-            if escolha_usuario == escolha_ganhador:
-                pontos += obter_pontos_por_categoria(categoria)
-                st.markdown(f"<p style='color: #00cc00; font-size: 14px;'>✅ {categoria}: {escolha_usuario} (GOTY2023)</p>", unsafe_allow_html=True)
-            else:
-                st.markdown(f"<p style='color: #ff0000; font-size: 14px;'>❌ {categoria}: {escolha_usuario} (GOTY2023)</p>", unsafe_allow_html=True)
+            acerto = escolha_usuario == escolha_ganhador
+            pontos_categoria = obter_pontos_por_categoria(categoria) if acerto else 0
 
-    st.markdown(f"<p style='font-size: 18px; margin-top: 20px;'>Pontos totais: <span style='color: #ff6600;'>{pontos}</span></p>", unsafe_allow_html=True)
+            resultados.append({
+                'Categoria': categoria,
+                'Escolha do Usuário': escolha_usuario,
+                'Ganhador do Prêmio': escolha_ganhador,
+                'Resultado': '✅' if acerto else '❌',
+                'Pontos': pontos_categoria
+            })
+
+            pontos += pontos_categoria
+
+    # Criar DataFrame com os resultados
+    df_resultados = pd.DataFrame(resultados)
+
+    # Adicionar cores de fundo à tabela
+    st.table(df_resultados.style.set_table_styles([
+        {'selector': 'th', 'props': [('background-color', '#9932CC'), ('color', '#FFFFFF')]},
+        {'selector': 'td', 'props': [('background-color', '#ffffff'), ('color', '#000000')]},
+        {'selector': 'tr:hover', 'props': [('background-color', '#DDA0DD')]}
+    ]))
+    st.markdown(
+        f"<p style='font-size: 26px; margin-top: 20px; text-align: center; color: #9932CC; font-weight: bold;'>Pontuação Total: {pontos}</p>",
+        unsafe_allow_html=True
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+
     return pontos
 
 def fechar_cursor(cursor):
@@ -428,5 +459,4 @@ snowflake_config = {
 
 # Conecta ao Snowflake
 connection = conectar_snowflake(**snowflake_config)
-
 
