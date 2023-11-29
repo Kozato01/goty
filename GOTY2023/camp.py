@@ -203,8 +203,8 @@ def exibir_formulario():
             🎮 Bem-vindo ao Formulário de Votação do The Game Awards! Este é um evento descontraído entre amigos.
             Os resultados serão anunciados em 7 de Dezembro de 2023. Boa sorte!
             Para discussões e mais informações, participe do nosso grupo no 
-            <a href='https://t.me/seu_grupo_do_telegram' target='_blank' style='color: #0099cc;'>
-                <img src='https://img.icons8.com/color/24/000000/telegram-app--v5.png' alt='https://t.me/monsterhunterbr'/>
+            <a href='https://t.me/monsterhunterbr' target='_blank' style='color: #0099cc;'>
+                <img src='https://img.icons8.com/color/24/000000/telegram-app--v5.png' alt='Telegram'/>
                 Grupo do Telegram
             </a>.
         </p>
