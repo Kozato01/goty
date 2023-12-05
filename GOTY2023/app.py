@@ -5,53 +5,54 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def definir_estilo_pagina():
-    estilo = """
+    # Definindo variáveis para as cores principais
+    cor_laranja_claro = "#FFA500"
+    cor_laranja_escuro = "#FF8C00"
+    cor_branco = "#FFFFFF"
+
+    # Estilo da página
+    estilo = f"""
         <style>
-            body {
+            body {{
                 font-size: 17px; /* Ajuste o tamanho do texto conforme necessário */
-            }
+            }}
 
-            .stApp > header {
+            .stApp > header {{
                 background-color: transparent;
-            }
+            }}
 
-            .stApp {
+            .stApp {{
                 margin: auto;
                 font-family: -apple-system, BlinkMacSystemFont, sans-serif;
                 overflow: auto;
-                background: linear-gradient(to bottom, #C5E0FF, #76a8f5, #9D28BD); /* Cores do degradê de fundo */
-                background-size: cover;
-                background-attachment: fixed;
+                background: linear-gradient(to bottom, {cor_laranja_claro}, {cor_laranja_escuro}, {cor_branco});
                 color: #000000; /* Cor do texto, ajustada para preto */
-            }
+            }}
 
-            .css-1aumxhk {
-                color: #000000 !important; /* Cor do texto do sidebar, ajustada para preto */
-            }
+            .css-1aumxhk {{
+                color: {cor_branco} !important; /* Cor do texto do sidebar, ajustada para branco */
+            }}
 
-            .st-d7 .st-ek.st-d4, .st-ee.st-d4 {
-                color: #000000; /* Cor do texto no tema claro, ajustada para preto */
-                background-color: #FFFFFF; /* Cor de fundo no tema claro, ajustada para branco */
-            }
-
-            .st-d7 .st-ek.st-d4 button, .st-ee.st-d4 button {
+            .st-d7 .st-ek.st-d4 button, .st-ee.st-d4 button {{
                 background-color: #008080; /* Cor do botão no tema claro, ajustada para verde azulado */
-                color: #FFFFFF; /* Cor do texto no botão no tema claro, ajustada para branco */
-            }
+                color: {cor_branco}; /* Cor do texto no botão no tema claro, ajustada para branco */
+            }}
 
-            .st-d7 .st-ek.st-d4 button:hover, .st-ee.st-d4 button:hover {
+            .st-d7 .st-ek.st-d4 button:hover, .st-ee.st-d4 button:hover {{
                 background-color: #006666; /* Cor do botão (hover) no tema claro, ajustada para tom mais escuro de verde azulado */
-            }
+                color: {cor_branco}; /* Cor do texto no botão (hover) no tema claro, ajustada para branco */
+            }}
 
             /* Estilos específicos para o tema escuro */
-            .st-d7 button {
+            .st-d7 button {{
                 background-color: #008080; /* Cor do botão no tema escuro, ajustada para cinza escuro */
-                color: #FFFFFF; /* Cor do texto no botão no tema escuro, ajustada para branco */
-            }
+                color: {cor_branco}; /* Cor do texto no botão no tema escuro, ajustada para branco */
+            }}
 
-            .st-d7 button:hover {
+            .st-d7 button:hover {{
                 background-color: #555555; /* Cor do botão (hover) no tema escuro, ajustada para cinza mais claro */
-            }
+                color: {cor_branco}; /* Cor do texto no botão (hover) no tema escuro, ajustada para branco */
+            }}
         </style>
     """
     st.markdown(estilo, unsafe_allow_html=True)
@@ -60,7 +61,7 @@ def main():
     definir_estilo_pagina()
 
     # Adicionar links para páginas
-    st.sidebar.markdown("<h3 style='color: #656b75;'>Navegação:</h3>", unsafe_allow_html=True)
+    st.sidebar.markdown("<h3 style='color: #000000;'>Navegação:</h3>", unsafe_allow_html=True)
     page = st.sidebar.radio("", ["Formulário", "Visualizar Respostas", "Excluir Dados"], key="sidebar")
 
     if page == "Formulário":
