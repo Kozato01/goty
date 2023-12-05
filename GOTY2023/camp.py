@@ -54,18 +54,18 @@ def exibir_formulario_exclusao():
     # Adicionar estilo ao título
     st.markdown(
     """
-    <div style='background: linear-gradient(to right, #9D28BD, #76a8f5, #C5E0FF); padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
+    <div style='background: linear-gradient(to right, #FFA500, #f5a623, #ffffff); padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
         <h1 style='color: #ffffff; text-align: center;'>
             <img src='https://medlimp.com.br/wp-content/uploads/2023/03/LIXEIRA-BRANCA-50L-SEM-POSTE-COM-HASTE-METALICA-JSN.png' style='vertical-align: middle; height: 1em;'/> Excluir Dados do Usuário
         </h1>
-        <p style='color: #666666; font-size: 16px; text-align: center; background: linear-gradient(to right, #f2f2f2, #ffffff); padding: 15px; border-radius: 8px;'>
+        <p style='color: #000000; font-size: 16px; text-align: center; background: linear-gradient(to right, #ffffff, #f2f2f2); padding: 15px; border-radius: 8px;'>
             🚨 <strong>Aviso:</strong> A exclusão de dados é uma ação irreversível. Utilize esta opção apenas para corrigir informações incorretas ou refazer seu formulário. A exclusão não será possível após a data limite.
         </p>
     </div>
-
     """,
     unsafe_allow_html=True,
 )
+
 
 
     col1, col2, col3 = st.columns(3)
@@ -195,11 +195,11 @@ def criar_tabela_sql(connection, tabela, categorias_escolhidas):
 def exibir_formulario():
     st.markdown(
     """
-    <h1 style='color: #ffffff; margin-top: 20px; background: linear-gradient(to right, #9D28BD, #76a8f5, #C5E0FF); padding: 15px; border-radius: 8px; text-align: center; font-weight: bold;'>
+    <h1 style='color: #ffffff; margin-top: 20px; background: linear-gradient(to right, #FFA500, #f5a623, #ffffff); padding: 15px; border-radius: 8px; text-align: center; font-weight: bold;'>
         <img src='https://cdn.worldvectorlogo.com/logos/the-game-awards.svg' style='vertical-align: middle; height: 1em;'/> Votação - The Game Awards
     </h1>
-    <div style='background: linear-gradient(to right, #9D28BD, #76a8f5, #C5E0FF); padding: 20px; border-radius: 10px;'>
-    <p style='color: #000000; font-size: 16px; text-align: center; background: linear-gradient(to right, #f2f2f2, #ffffff); padding: 15px; border-radius: 4px;'>
+    <div style='background: linear-gradient(to right, #FFA500, #f5a623, #ffffff); padding: 20px; border-radius: 10px;'>
+        <p style='color: #000000; font-size: 16px; text-align: center; background: linear-gradient(to right, #ffffff, #f2f2f2); padding: 15px; border-radius: 4px;'>
             🎮 Bem-vindo ao Formulário de Votação do The Game Awards! Este é um evento descontraído entre amigos.
             Os resultados serão anunciados em 7 de Dezembro de 2023. Boa sorte!
             Para discussões e mais informações, participe do nosso grupo no 
@@ -254,14 +254,14 @@ def obter_respostas_usuario(categorias_escolhidas):
         categoria = categoria_info["Categoria"]
         opcoes = categoria_info["Opções"]
 
-        if st.checkbox(f"{numero}. Escolher {categoria}", key=categoria):
-            st.write("Clique abaixo para ver as opções:")
-            with st.expander(f"Opções para {categoria}", expanded=False):
-                opcao_escolhida = st.selectbox(f"Escolha a opção em {categoria}:", opcoes)
-                respostas_usuario[categoria] = opcao_escolhida
-            st.markdown('<div style="float: right; margin-right: 20px;"><span style="color:green">&#10004;</span> Categoria escolhida: {}</div>'.format(categoria), unsafe_allow_html=True)
-    escolhas_usuario_dict = {categoria: opcao for categoria, opcao in respostas_usuario.items()}
-    escolhas_usuario_df = pd.DataFrame.from_dict(escolhas_usuario_dict, orient='index', columns=["Escolha"])
+        # Criando uma seção para cada categoria com um checkbox
+        if st.checkbox(f"**{numero}. Escolher {categoria}**", key=categoria, value=False):
+            # Adicionando título em negrito à seção de opções
+            #st.markdown(f"**Clique abaixo para ver as opções para {categoria}:**")
+            opcao_escolhida = st.selectbox(f"Escolha a opção em {categoria}:", opcoes)
+            respostas_usuario[categoria] = opcao_escolhida
+            st.markdown(f'<div style="float: right; margin-right: 20px; color:#000000; font-weight: bold;">&#10004; Categoria escolhida: {categoria}</div>', unsafe_allow_html=True)
+    escolhas_usuario_df = pd.DataFrame.from_dict(respostas_usuario, orient='index', columns=["Escolha"])
 
     return respostas_usuario
 
@@ -269,11 +269,11 @@ def obter_respostas_usuario(categorias_escolhidas):
 
 def exibir_escolhas_usuario(categorias_escolhidas):
     st.markdown(
-        """
-        <h2 style='color: #ffffff; margin-top: 20px; background: linear-gradient(to right, #9D28BD, #76a8f5, #C5E0FF); padding: 15px; border-radius: 8px; text-align: center; font-weight: bold;'>Respostas Cadastradas</h2>
-        """,
-        unsafe_allow_html=True
-    )
+    """
+    <h2 style='color: #ffffff; margin-top: 20px; background: linear-gradient(to right, #FFA500, #f5a623, #ffffff); padding: 15px; border-radius: 8px; text-align: center; font-weight: bold;'>Respostas Cadastradas</h2>
+    """,
+    unsafe_allow_html=True
+)
     escolhas_usuario_df = pd.DataFrame.from_dict(categorias_escolhidas, orient='index', columns=["Escolha"])
     escolhas_usuario_df = escolhas_usuario_df.T
     estilo_df = {
@@ -287,19 +287,19 @@ def exibir_escolhas_usuario(categorias_escolhidas):
 
 def exibir_formulario_visualizacao_respostas():
     st.markdown(
-        """
-        <div style='background: linear-gradient(to right, #9D28BD, #76a8f5, #C5E0FF); padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
-            <h1 style='color: #ffffff; text-align: center;'>
-                <img src='https://cdn3.iconfinder.com/data/icons/web-and-seo-31/16/invisible-eye-512.png' style='vertical-align: middle; height: 1em;'/> Visualizar Respostas
-            </h1>
-            <p style='color: #666666; font-size: 16px; text-align: center; background: linear-gradient(to right, #f2f2f2, #ffffff); padding: 15px; border-radius: 8px;'>
-                📋 Aqui você pode visualizar suas respostas cadastradas no formulário. No dia do evento, você saberá quantos pontos acumulou com suas escolhas!
-            </p>
-        </div>
+    """
+    <div style='background: linear-gradient(to right, #FFA500, #f5a623, #ffffff); padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
+        <h1 style='color: #ffffff; text-align: center;'>
+            <img src='https://cdn3.iconfinder.com/data/icons/web-and-seo-31/16/invisible-eye-512.png' style='vertical-align: middle; height: 1em;'/> Visualizar Respostas
+        </h1>
+        <p style='color: #000000; font-size: 16px; text-align: center; background: linear-gradient(to right, #ffffff, #f2f2f2); padding: 15px; border-radius: 8px;'>
+            📋 Aqui você pode visualizar suas respostas cadastradas no formulário. No dia do evento, você saberá quantos pontos acumulou com suas escolhas!
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
-        """,
-        unsafe_allow_html=True,
-    )
 
     col1, col2 = st.columns(2)
     with col1:
