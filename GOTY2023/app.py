@@ -6,8 +6,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def definir_estilo_pagina():
     # Definindo variáveis para as cores principais
-    cor_laranja_claro = "#FFA500"
-    cor_laranja_escuro = "#FF8C00"
+    cor_laranja_claro = "#FF8247"
+    cor_laranja_escuro = "#ffc9b0"  # Tom mais escuro de laranja
     cor_branco = "#FFFFFF"
 
     # Estilo da página
@@ -34,23 +34,23 @@ def definir_estilo_pagina():
             }}
 
             .st-d7 .st-ek.st-d4 button, .st-ee.st-d4 button {{
-                background-color: #008080; /* Cor do botão no tema claro, ajustada para verde azulado */
+                background-color: #FF6347; /* Cor do botão no tema claro, tom mais escuro de laranja */
                 color: {cor_branco}; /* Cor do texto no botão no tema claro, ajustada para branco */
             }}
 
             .st-d7 .st-ek.st-d4 button:hover, .st-ee.st-d4 button:hover {{
-                background-color: #006666; /* Cor do botão (hover) no tema claro, ajustada para tom mais escuro de verde azulado */
+                background-color: #FF4500; /* Cor do botão (hover) no tema claro, tom mais intenso de laranja */
                 color: {cor_branco}; /* Cor do texto no botão (hover) no tema claro, ajustada para branco */
             }}
 
             /* Estilos específicos para o tema escuro */
             .st-d7 button {{
-                background-color: #008080; /* Cor do botão no tema escuro, ajustada para cinza escuro */
+                background-color: #FF6347; /* Cor do botão no tema escuro, tom mais escuro de laranja */
                 color: {cor_branco}; /* Cor do texto no botão no tema escuro, ajustada para branco */
             }}
 
             .st-d7 button:hover {{
-                background-color: #555555; /* Cor do botão (hover) no tema escuro, ajustada para cinza mais claro */
+                background-color: #FF4500; /* Cor do botão (hover) no tema escuro, tom mais intenso de laranja */
                 color: {cor_branco}; /* Cor do texto no botão (hover) no tema escuro, ajustada para branco */
             }}
         </style>
@@ -61,7 +61,7 @@ def main():
     definir_estilo_pagina()
 
     # Adicionar links para páginas
-    st.sidebar.markdown("<h3 style='color: #000000;'>Navegação:</h3>", unsafe_allow_html=True)
+    st.sidebar.markdown("<h3 style='color: #e54747;'>Navegação:</h3>", unsafe_allow_html=True)
     page = st.sidebar.radio("", ["Formulário", "Visualizar Respostas", "Excluir Dados"], key="sidebar")
 
     if page == "Formulário":
