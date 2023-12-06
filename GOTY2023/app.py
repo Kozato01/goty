@@ -62,16 +62,11 @@ def main():
 
     # Adicionar links para páginas
     st.sidebar.markdown("<h3 style='color: #e54747;'>Navegação:</h3>", unsafe_allow_html=True)
-    page = st.sidebar.radio("", ["Formulário", "Visualizar Respostas", "Excluir Dados"], key="sidebar")
+    page = st.sidebar.radio("", ["Visualizar Respostas"], key="sidebar")
 
-    if page == "Formulário":
-        exibir_formulario()
-
-    elif page == "Visualizar Respostas":
+    if page == "Visualizar Respostas":
         exibir_formulario_visualizacao_respostas()
 
-    elif page == "Excluir Dados":
-        exibir_formulario_exclusao()
 
 if __name__ == "__main__":
     st.set_page_config(
