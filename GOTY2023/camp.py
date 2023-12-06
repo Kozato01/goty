@@ -301,7 +301,7 @@ def exibir_formulario_visualizacao_respostas():
 )
 
 
-    col1, col2 = st.columns(2)
+    col1, col2= st.columns(2)
     with col1:
         email = st.text_input("Email:").lower()
     with col2:
@@ -310,6 +310,68 @@ def exibir_formulario_visualizacao_respostas():
     if st.button("Visualizar Respostas"):
         visualizar_respostas_usuario(email, telegram, connection, 'GOTY2023')
 
+    if st.sidebar.button("Participantes"):
+        usuariosescolhas(connection, "usuariosgoty")
+
+def usuariosescolhas(connection, tabela):
+    try:
+        cursor = connection.cursor()
+
+        # Consultar todas as respostas dos usuários
+        query = f"SELECT * FROM {tabela}"
+        cursor.execute(query)
+        usuarios_respostas = cursor.fetchall()
+
+        # Criar DataFrame com as respostas dos usuários
+        colunas = [desc[0] for desc in cursor.description]
+        df_usuarios_respostas = pd.DataFrame(usuarios_respostas, columns=colunas)
+
+        # Mapear as colunas para os novos nomes
+        novo_nome_colunas = {
+            "JOGO_DO_ANO": "Jogo do Ano - 10 pontos",
+            "MELHOR_DIRE__O_DE_JOGO": "Melhor Direção de Jogo - 5 pontos",
+            "MELHOR_NARRATIVA": "Melhor Narrativa - 5 pontos",
+            "MELHOR_DIRE__O_DE_ARTE": "Melhor Direção de Arte - 5 pontos",
+            "MELHOR_TRILHA_SONORA": "Melhor Trilha Sonora - 5 pontos",
+            "MELHOR_DESIGN_DE__UDIO": "Melhor Design de Áudio - 5 pontos",
+            "MELHOR_ATUA__O": "Melhor Atuação - 5 pontos",
+            "INOVA__O_EM_ACESSIBILIDADE": "Inovação em Acessibilidade - 5 pontos",
+            "JOGOS_COM_MAIOR_IMPACTO_SOCIAL": "Jogos com Maior Impacto Social - 5 pontos",
+            "MELHOR_JOGO_CONT_NUO": "Melhor Jogo Contínuo - 5 pontos",
+            "MELHOR_SUPORTE_COMUNIT_RIO": "Melhor Suporte Comunitário - 3 pontos",
+            "MELHOR_JOGO_INDEPENDENTE": "Melhor Jogo Independente - 3 pontos",
+            "MELHOR_ESTREIA_DE_UM_EST_DIO_INDIE": "Melhor Estreia de um Estúdio Indie - 3 pontos",
+            "MELHOR_JOGO_MOBILE": "Melhor Jogo Mobile - 3 pontos",
+            "MELHOR_VR___AR": "Melhor VR / AR - 3 pontos",
+            "MELHOR_JOGO_DE_A__O": "Melhor Jogo de Ação - 3 pontos",
+            "MELHOR_JOGO_DE_A__O___AVENTURA": "Melhor Jogo de Ação / Aventura - 3 pontos",
+            "MELHOR_RPG": "Melhor RPG - 3 pontos",
+            "MELHOR_JOGO_DE_LUTA": "Melhor Jogo de Luta - 3 pontos",
+            "MELHOR_JOGO_PARA_FAM_LIA": "Melhor Jogo para Família - 3 pontos",
+            "MELHOR_JOGO_DE_SIMULA__O___ESTRAT_GIA": "Melhor Jogo de Simulação / Estratégia - 2 pontos",
+            "MELHOR_JOGO_DE_ESPORTE___CORRIDA": "Melhor Jogo de Esporte / Corrida - 2 pontos",
+            "MELHOR_JOGO_MULTIPLAYER": "Melhor Jogo Multiplayer - 2 pontos",
+            "MELHOR_ADAPTA__O": "Melhor Adaptação - 2 pontos",
+            "JOGO_MAIS_AGUARDADO_DE_2024": "Jogo Mais Aguardado de 2024 - 2 pontos"
+        }
+
+        # Renomear as colunas
+        df_usuarios_respostas = df_usuarios_respostas.rename(columns=novo_nome_colunas)
+
+        # Exibir a tabela de respostas dos usuários
+        st.dataframe(df_usuarios_respostas.style
+            .set_table_styles([{"selector": "th", "props": [("background-color", "#333333"), ("color", "#ff6600")]}])
+            .apply(lambda x: ["background: linear-gradient(to right, #333333, #666666); color: #ff6600"] * len(x), axis=1)
+        )
+
+    except snowflake.connector.errors.DatabaseError as e:
+        st.error(f"Erro ao consultar respostas dos usuários: {str(e)}")
+
+    except Exception as ex:
+        st.error(f"Ocorreu um erro inesperado ao consultar respostas dos usuários: {str(ex)}")
+
+    finally:
+        fechar_cursor(cursor)
 
 # Função para visualizar as respostas do usuário
 def visualizar_respostas_usuario(email, telegram, connection, tabela):
