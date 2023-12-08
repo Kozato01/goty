@@ -67,13 +67,13 @@ def obter_categorias_escolhidas():
 #DIA 7 DE DEZEMBRO CORRIGIR!
 def respostas_ganhadores_df():
     return pd.DataFrame({
-     "Jogo do Ano - 10 pontos": ['''Baldur's Gate 3'''],
+        "Jogo do Ano - 10 pontos": ['''Baldur's Gate 3'''],
         "Melhor Direção de Jogo - 5 pontos": ['''Alan Wake 2'''],
-     "Melhor Narrativa - 5 pontos": ['''Alan Wake 2'''],
+        "Melhor Narrativa - 5 pontos": ['''Alan Wake 2'''],
        "Melhor Direção de Arte - 5 pontos": ['''Alan Wake 2'''],
        "Melhor Trilha Sonora - 5 pontos": ['''Final Fantasy XVI, por Masayoshi Soken'''],
        "Melhor Design de Áudio - 5 pontos": ['''Hi-Fi Rush'''],
-       "Melhor Atuação - 5 pontos": ['''Neil Newbon, por Baldur''s Gate 3'''],
+       "Melhor Atuação - 5 pontos": ['''"Neil Newbon, por Baldur's Gate 3"'''],
        "Inovação em Acessibilidade - 5 pontos": ['''Forza Motorsport'''],
        "Jogos com Maior Impacto Social - 5 pontos": ['''Tchia'''],
        "Melhor Jogo Contínuo - 5 pontos": ['''Cyberpunk 2077'''],
