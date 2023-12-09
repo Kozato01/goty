@@ -514,11 +514,11 @@ def fechar_cursor(cursor):
 
 
 snowflake_config = {
-    'account': 'iq55768.sa-east-1.aws',
-    'username': 'kozato',
-    'password': 'Bigbar@1015',
-    'warehouse': 'COMPUTE_WH',
-    'database': 'GOTY'
+    'account': '',
+    'username': '',
+    'password': '',
+    'warehouse': '',
+    'database': ''
 }
 
 
