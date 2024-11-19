@@ -3,5 +3,5 @@ streamlit
 snowflake-connector-python==3.3.0
 requests
 datetime
-pyarrow
+pyarrow==10.0.1
 python-dotenv
