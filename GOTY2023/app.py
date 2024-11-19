@@ -1,16 +1,19 @@
 import streamlit as st
-from camp import exibir_formulario, exibir_formulario_exclusao, exibir_formulario_visualizacao_respostas
+from camp import (
+    exibir_formulario,
+    exibir_formulario_exclusao,
+    exibir_formulario_visualizacao_respostas,
+)
 import warnings
 
-warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action="ignore", category=FutureWarning)
+
 
 def definir_estilo_pagina():
-    # Definindo variáveis para as cores principais
-    cor_laranja_claro = "#FF8247"
-    cor_laranja_escuro = "#ffc9b0"  # Tom mais escuro de laranja
-    cor_branco = "#FFFFFF"
+    cor_laranja_claro = "#16202c"
+    cor_laranja_escuro = "#394e6c"
+    cor_branco = "#16202c"
 
-    # Estilo da página
     estilo = f"""
         <style>
             body {{
@@ -34,45 +37,71 @@ def definir_estilo_pagina():
             }}
 
             .st-d7 .st-ek.st-d4 button, .st-ee.st-d4 button {{
-                background-color: #FF6347; /* Cor do botão no tema claro, tom mais escuro de laranja */
+                background-color: {cor_laranja_claro}; /* Cor do botão no tema claro */
                 color: {cor_branco}; /* Cor do texto no botão no tema claro, ajustada para branco */
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                font-size: 16px;
+                transition: background-color 0.3s ease, transform 0.2s ease;
             }}
 
             .st-d7 .st-ek.st-d4 button:hover, .st-ee.st-d4 button:hover {{
-                background-color: #FF4500; /* Cor do botão (hover) no tema claro, tom mais intenso de laranja */
-                color: {cor_branco}; /* Cor do texto no botão (hover) no tema claro, ajustada para branco */
+                background-color: {cor_laranja_escuro}; /* Cor do botão (hover) no tema claro */
+                color: {cor_branco};
+                transform: scale(1.05); /* Efeito de aumento no hover */
             }}
 
             /* Estilos específicos para o tema escuro */
             .st-d7 button {{
-                background-color: #FF6347; /* Cor do botão no tema escuro, tom mais escuro de laranja */
-                color: {cor_branco}; /* Cor do texto no botão no tema escuro, ajustada para branco */
+                background-color: {cor_laranja_claro}; /* Cor do botão no tema escuro */
+                color: {cor_branco}; /* Cor do texto no botão no tema escuro */
             }}
 
             .st-d7 button:hover {{
-                background-color: #FF4500; /* Cor do botão (hover) no tema escuro, tom mais intenso de laranja */
-                color: {cor_branco}; /* Cor do texto no botão (hover) no tema escuro, ajustada para branco */
+                background-color: {cor_laranja_escuro}; /* Cor do botão (hover) no tema escuro */
+                color: {cor_branco};
+                transform: scale(1.05); /* Efeito de aumento no hover */
+            }}
+
+            /* Estilo para links */
+            a {{
+                color: {cor_laranja_escuro};
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }}
+
+            a:hover {{
+                color: {cor_laranja_claro};
+            }}
+
+            /* Estilos para textos importantes */
+            h1, h2, h3 {{
+                color: {cor_laranja_escuro};
             }}
         </style>
     """
     st.markdown(estilo, unsafe_allow_html=True)
 
+
 def main():
     definir_estilo_pagina()
+    st.sidebar.markdown(
+        "<h3 style='color: #e9e3fa;'>Navegação:</h3>", unsafe_allow_html=True
+    )
+    page = st.sidebar.radio(
+        "", ["Formulário", "Visualizar Respostas", "Excluir Dados"], key="sidebar"
+    )
 
-    # Adicionar links para páginas
-    st.sidebar.markdown("<h3 style='color: #e54747;'>Navegação:</h3>", unsafe_allow_html=True)
-    page = st.sidebar.radio("", ["Visualizar Respostas"], key="sidebar")
+    if page == "Formulário":
+        exibir_formulario()
 
-    if page == "Visualizar Respostas":
+    elif page == "Visualizar Respostas":
         exibir_formulario_visualizacao_respostas()
+
+    elif page == "Excluir Dados":
+        exibir_formulario_exclusao()
 
 
 if __name__ == "__main__":
-    st.set_page_config(
-        page_title="GOTY 2023 - Formulário",
-        page_icon=":trophy:",
-        layout="wide",
-        initial_sidebar_state="expanded",
-    )
     main()
