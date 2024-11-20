@@ -102,6 +102,7 @@ def conectar_snowflake(account, username, password, warehouse, database, schema=
             warehouse=warehouse,
             database=database,
             schema=schema,
+            client_session_keep_alive=True,  # Mantém a conexão ativa
         )
         return connection
     except snowflake.connector.errors.DatabaseError as e:
@@ -751,8 +752,8 @@ def verificar_e_reconectar(
     connection, account, username, password, warehouse, database, schema=None
 ):
     try:
-        # Verifica se a conexão está fechada
-        if not connection or connection.is_closed():
+        # Verifica se a conexão existe e está fechada
+        if connection is None or connection.is_closed():
             st.warning("Conexão inativa. Reconectando ao Snowflake...")
             connection = conectar_snowflake(
                 account, username, password, warehouse, database, schema
@@ -760,13 +761,20 @@ def verificar_e_reconectar(
         else:
             # Testa a conexão com um comando simples
             cursor = connection.cursor()
-            cursor.execute("SELECT 1")
-            cursor.close()
+            try:
+                cursor.execute("SELECT 1")
+            except snowflake.connector.errors.OperationalError as e:
+                st.warning(f"Erro na conexão ativa: {str(e)}. Reconectando...")
+                connection = conectar_snowflake(
+                    account, username, password, warehouse, database, schema
+                )
+            finally:
+                cursor.close()
     except (
         snowflake.connector.errors.ProgrammingError,
         snowflake.connector.errors.DatabaseError,
     ) as e:
-        st.error(f"Erro ao verificar a conexão: {str(e)}. Tentando reconectar...")
+        st.error(f"Erro ao verificar ou reconectar: {str(e)}")
         connection = conectar_snowflake(
             account, username, password, warehouse, database, schema
         )
