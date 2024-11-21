@@ -33,11 +33,11 @@ def apagar_dados_usuario(connection, tabela, email, nome, telegram):
             st.warning(f"A tabela '{tabela}' não existe.")
             return
 
-        data_limite_exclusao = datetime(2024, 12, 7)
+        data_limite_exclusao = datetime(2024, 12, 10)
         data_atual = datetime.now()
 
         if data_atual > data_limite_exclusao:
-            st.warning("Não é permitido excluir dados após 07/12/2024.")
+            st.warning("Não é permitido excluir dados após 10/12/2024.")
             return
         if not verificar_existencia_usuario(connection, email, nome, telegram, tabela):
             st.warning("Usuário não encontrado. Nenhum dado foi excluído.")
@@ -225,7 +225,7 @@ def exibir_formulario():
     <div style="background: linear-gradient(to right, #16202c, #394e6c); padding: 20px; border-radius: 10px;">
         <p style="color: #394e6c; font-size: 16px; text-align: center; background: #fcfdfd; padding: 15px; border-radius: 4px;">
             🎮 Bem-vindo ao Formulário de Votação do The Game Awards! Este é um evento descontraído entre amigos.
-            Os resultados serão anunciados em 7 de Dezembro de 2024. Boa sorte!
+            Os resultados serão anunciados em 12 de Dezembro de 2024. Boa sorte!
             Para discussões e mais informações, participe do nosso grupo no 
             <a href="https://t.me/monsterhunterbr" target="_blank" style="color: #394e6c;">
                 <img src="https://img.icons8.com/color/24/000000/telegram-app--v5.png" alt="Telegram" />
@@ -806,7 +806,7 @@ try:
     cursor = connection.cursor()
     cursor.execute("SELECT CURRENT_DATE;")
     data_atual = cursor.fetchone()
-    # st.write(f"Data atual no Snowflake: {data_atual[0]}")
+    st.write(f"DBHS: {data_atual[0]}")
     cursor.close()
 except Exception as e:
     st.error(f"Erro ao executar consulta: {str(e)}")

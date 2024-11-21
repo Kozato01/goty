@@ -33,7 +33,7 @@ def definir_estilo_pagina():
             }}
 
             .css-1aumxhk {{
-                color: {cor_branco} !important; /* Cor do texto do sidebar, ajustada para branco */
+                color: #FFFFFF !important; /* Cor do texto do sidebar, ajustada para branco */
             }}
 
             .st-d7 .st-ek.st-d4 button, .st-ee.st-d4 button {{
@@ -45,6 +45,21 @@ def definir_estilo_pagina():
                 font-size: 16px;
                 transition: background-color 0.3s ease, transform 0.2s ease;
             }}
+            
+            button[kind="secondary"] {{
+            background-color: #FFFFFF !important; /* Fundo branco */
+            font-weight: bold !important; /* Texto em negrito */
+            border: 1px solid {cor_laranja_claro}; /* Borda opcional */
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            }}
+
+        button[kind="secondary"]:hover {{
+            background-color: {cor_laranja_claro}; /* Fundo alterado no hover */
+            transform: scale(1.05); /* Efeito de aumento no hover */
+             }}
 
             .st-d7 .st-ek.st-d4 button:hover, .st-ee.st-d4 button:hover {{
                 background-color: {cor_laranja_escuro}; /* Cor do botão (hover) no tema claro */
@@ -84,15 +99,37 @@ def definir_estilo_pagina():
     st.markdown(estilo, unsafe_allow_html=True)
 
 
+st.markdown(
+    """
+    <style>
+    .css-1jc7ptx, .e1ewe7hr3, .viewerBadge_container__1QSob,
+    .styles_viewerBadge__1yB5_, .viewerBadge_link__1S137,
+    .viewerBadge_text__1JaDK {
+        display: none;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
 def main():
     definir_estilo_pagina()
+
+    # Título do menu de navegação
     st.sidebar.markdown(
-        "<h3 style='color: #e9e3fa;'>Navegação:</h3>", unsafe_allow_html=True
-    )
-    page = st.sidebar.radio(
-        "", ["Formulário", "Visualizar Respostas", "Excluir Dados"], key="sidebar"
+        "<h2 style='color: #e9e3fa; text-align: center;'>Menu</h2>",
+        unsafe_allow_html=True,
     )
 
+    # Opções de navegação
+    page = st.sidebar.selectbox(
+        "Escolha uma opção:",
+        ["Formulário", "Visualizar Respostas", "Excluir Dados"],
+        key="sidebar_menu",
+    )
+
+    # Exibe as páginas com base na seleção
     if page == "Formulário":
         exibir_formulario()
 
