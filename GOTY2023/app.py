@@ -125,19 +125,20 @@ def main():
     # Opções de navegação
     page = st.sidebar.selectbox(
         "Escolha uma opção:",
-        ["Formulário", "Visualizar Respostas", "Excluir Dados"],
+        # ["Formulário", "Visualizar Respostas", "Excluir Dados"],
+        ["Visualizar Respostas"],
         key="sidebar_menu",
     )
 
     # Exibe as páginas com base na seleção
-    if page == "Formulário":
-        exibir_formulario()
+    # if page == "Formulário":
+    #    exibir_formulario()
 
-    elif page == "Visualizar Respostas":
+    if page == "Visualizar Respostas":
         exibir_formulario_visualizacao_respostas()
 
-    elif page == "Excluir Dados":
-        exibir_formulario_exclusao()
+    # elif page == "Excluir Dados":
+    #   exibir_formulario_exclusao()
 
 
 if __name__ == "__main__":
