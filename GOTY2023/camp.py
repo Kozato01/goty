@@ -407,8 +407,7 @@ def exibir_formulario_visualizacao_respostas():
                 style='vertical-align: middle; height: 1em;'/> Visualizar Respostas
             </h1>
             <p style='color: #394e6c; font-size: 16px; text-align: center; background: #fcfdfd; padding: 15px; border-radius: 8px;'>
-                📋 Aqui você pode visualizar suas respostas cadastradas no formulário. No dia do evento, você saberá quantos pontos acumulou com suas escolhas!
-            </p>
+                VAMOS SABER QUEM É O GANHADOR AS 00:00h</p>
         </div>
         """,
         unsafe_allow_html=True,
