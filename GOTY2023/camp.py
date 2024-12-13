@@ -643,7 +643,7 @@ def visualizar_respostas_usuario(email, telegram, connection, tabela):
 
         # AQUIIIII
 
-        # contar_pontos(respostas_df, respostas_ganhadores_df)
+        contar_pontos(respostas_df, respostas_ganhadores_df)
 
     except snowflake.connector.errors.DatabaseError as e:
         st.error(f"Erro ao consultar respostas do usuário: {str(e)}")
