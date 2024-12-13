@@ -297,7 +297,7 @@ def obter_categorias_escolhidas():
 def respostas_ganhadores_df():
     return pd.DataFrame(
         {
-            "Jogo do Ano - 10 pontos": [""""""],
+            "Jogo do Ano - 10 pontos": ["""Astro Bot"""],
             "Melhor Direção de Jogo - 5 pontos": ["""Astro Bot"""],
             "Melhor Narrativa - 5 pontos": ["""Metaphor ReFantazio"""],
             "Melhor Direção de Arte - 5 pontos": ["""Metaphor ReFantazio"""],
