@@ -311,7 +311,7 @@ def respostas_ganhadores_df():
             "Melhor Jogo Independente - 3 pontos": [""""""],
             "Melhor Estreia de um Estúdio Indie - 3 pontos": [""""""],
             "Melhor Jogo Mobile - 3 pontos": [""""""],
-            "Melhor VR / AR - 3 pontos": [""""""],
+            "Melhor VR / AR - 3 pontos": ["""Batman Arkham Shadow"""],
             "Melhor Jogo de Ação - 3 pontos": [""""""],
             "Melhor Jogo de Ação / Aventura - 3 pontos": [""""""],
             "Melhor RPG - 3 pontos": [""""""],
