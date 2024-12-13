@@ -315,7 +315,7 @@ def respostas_ganhadores_df():
             "Melhor Jogo de Ação - 3 pontos": [""""""],
             "Melhor Jogo de Ação / Aventura - 3 pontos": [""""""],
             "Melhor RPG - 3 pontos": [""""""],
-            "Melhor Jogo de Luta - 3 pontos": [""""""],
+            "Melhor Jogo de Luta - 3 pontos": ["""Tekken 8"""],
             "Melhor Jogo para Família - 3 pontos": [""""""],
             "Melhor Jogo de Simulação / Estratégia - 2 pontos": [""""""],
             "Melhor Jogo de Esporte / Corrida - 2 pontos": [""""""],
