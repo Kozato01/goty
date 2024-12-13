@@ -638,8 +638,8 @@ def visualizar_respostas_usuario(email, telegram, connection, tabela):
         </style>
         """
 
-        st.markdown(css, unsafe_allow_html=True)
-        st.markdown(html_table, unsafe_allow_html=True)
+        #st.markdown(css, unsafe_allow_html=True)
+        #st.markdown(html_table, unsafe_allow_html=True)
 
         # AQUIIIII
 
